@@ -10,13 +10,23 @@
 <div id="wrap">
   <div id="header">
     <div id="logo"></div>
-    <div id="title">Metaproxy</div>
+    <div id="title">MetaProxy</div>
     <div id="tagline">Inserting metadata to your webpages...</div>
   </div>
+  <div id="nav">
+    <div id="nbar">
+      <ul>
+	<li id="selected"><a href="/">Home</a></li>
+	<li><a href="/manager/">Manager</a></li>
+	<li><a href="/admin/">Admin</a></li>
+      </ul>
+    </div>
+  </div>
+
 {% block body %}{% endblock %}
 
   <div id="content-bottom">
-      <div id=badges>
+      <div id="badges">
 	  <a href="http://www.djangoproject.com/"><img src="/static/img/django_logo_green.gif" border="0" alt="Made with Django." title="Made with Django." /></a>
 	  <a href="http://www.python.org/"><img src="/static/img/python_logo.png" border="0" alt="Made with Python." title="Made with Python." /></a>
       </div>

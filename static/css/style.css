@@ -68,6 +68,13 @@ a:hover {
 	background: #333 url(../img/header.png) no-repeat;
 }
 
+#logo {
+	height: 70px;
+	width: 80px;
+	float: left;
+	background: url(../img/logo.png) no-repeat;
+}
+
 #title {
 	color: #fff;
 	font-size: 30px;
@@ -81,13 +88,6 @@ a:hover {
 	font-size: 14px;
 	padding-left: 20px;
 	width: 600px;
-}
-
-#logo {
-	height: 70px;
-	width: 70px;
-	float: left;
-	background: url(../img/logo.png) no-repeat;
 }
 	
 /* navigation */

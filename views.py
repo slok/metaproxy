@@ -1,10 +1,11 @@
+
 from django.contrib.auth import logout
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.conf import settings
 
 def main_page(request):
-    response_dict = { 'settings' : settings,  
+    response_dict = { 'tabla' : ("X","Y","Z"),  
     }
     return render_to_response('index.html', response_dict)
 

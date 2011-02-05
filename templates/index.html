@@ -6,12 +6,32 @@
 
 {% block body %}
     <header>
-        <h1>Meta Proxy Main page</h1>
+	<div id="intro">
+	  <div id="intro-msg">
+	    <h1>Welcome to Meta Proxy</h1>
+	    <p>Welcome to <strong>Meta Proxy</strong> Site. (Descripcion)</p>
+	    <p>
+	      <ul>
+		<li>Manager ---> to manage the proxy</li>
+		<li>Admin ---> to access Django User administration</li>
+	      </ul>
+	    </p>
+	  </div>
+	  <div id="intro-pic">
+	    <div align="left"><img src="/static/img/intro-pic.png" alt="intro" /></div>
+	  </div>
+	</div>
     </header>
-
-    <section>
-        <p>Welcome to metaproxy Site. Please click <a href="/manager/">here</a> to log into our manage site.</p>
-    </section>
+    <body>
+	<div id="homecontent">
+	  <h2>Proxied Sites</h2>
+	  <ul>
+	    {% for item in tabla %}
+	      <li>{{ item }}</li>
+	    {% endfor %}
+	  </ul>
+	</div>
+    </body>
 {% endblock %}
 
  
