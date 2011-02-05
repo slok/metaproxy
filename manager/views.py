@@ -10,3 +10,17 @@ take them to the login page.
     return render_to_response('manager/index.html')
 
 
+def manager_rdf_upload_page(request):
+  pass
+
+def manager_ontologies_upload_page(request):
+  pass
+
+def manager_sparql_queries_page(request):
+  pass
+
+def manager_sparql_results_page(request):
+  pass
+
+def manager_proxied_sites_page(request):
+  pass
