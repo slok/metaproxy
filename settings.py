@@ -89,6 +89,14 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
     os.path.join(SITE_ROOT, 'templates'),
 )
+#REVPROXY_CONN_MGR = "restkit.conn.gevent_manager:GeventConnectionManager"
+
+REVPROXY_SETTINGS = [
+    ("google", "http://google.com"),
+	("Diego_Lopez_de_Ipina", "http://paginaspersonales.deusto.es/dipina/"),
+	("David_Bujan", "http://paginaspersonales.deusto.es/dbujan/"),
+	("slok", "http://slok.homelinux.com")
+]
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -98,4 +106,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.admin',
     'manager',
+    'revproxy',
+    'gunicorn'
 )

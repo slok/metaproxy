@@ -3,9 +3,13 @@ from metaproxy.views import *
 from django.contrib import admin
 import manager
 from manager.urls import *
+from revproxy import proxy
 admin.autodiscover()
 
 urlpatterns = patterns('',
+    
+    #proxied URLs
+    (r'^proxy/', include(proxy.site_proxy.urls)),
     
     #main page (directly the  proxy or a page with all the proxied sites??)
     (r'^$', main_page),
