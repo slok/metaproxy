@@ -1,3 +1,20 @@
+#Copyright (C) 2011 Iraide Diaz (sharem)
+#Copyright (C) 2011 Xabier Larrakoetxea (slok)
+#
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#GNU General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+#along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+
 import rdflib
 from rdflib import plugin
 from rdflib.store import Store
@@ -62,21 +79,46 @@ def sparql_prefix_parser(query):
 		#delete from the beggining (PREFIX) to the first ">"
 		query = query.replace(query[0:query.find(">")+1], ' ', 1)
 	return returnList
-	
 #####################################################################################
-"""def sparql_query(query):
-
+def delete_sparql_prefix(query):
+	""" Deletes the PREFIX line(s) from the query and returns it
+	"""
+	while query.count("PREFIX") != 0:
+		query = query.replace(query[0:query.find(">")+1], '', 1)
+	
+	return query
+#####################################################################################
+def sparql_query(query):
+	""" Makes a sparql query to the SQLite database and returns a result
+	Keyword arguments:
+	query -- the query to execute
+	
+	Returns a result (rdflib result)
+	TODO: Return a good formated string and not a raw result
+	"""	
+	prefixes = {}
+	#connect to database
 	store = plugin.get('SQLite', Store)('rdfstore.sqlite')
 	store.open('rdfstore.sqlite', create=True)
+	
+	#load the graph
 	g = ConjunctiveGraph(store)
-
+	
+	#register the sparql and SQLite plugin for the queries
 	plugin.register('SQLite', Store, 'rdflib.store.SQLite', 'SQLite')
-
 	plugin.register('sparql', sparql.Processor,
 		 'rdflib.sparql.bison.Processor', 'Processor')
 	plugin.register('SPARQLQueryResult', QueryResult,
 	  'rdflib.sparql.QueryResult', 'SPARQLQueryResult')
-	qres = g.query(query)
+	
+	# add prefixes to the dictionary
+	for prefix in sparql_prefix_parser(query):
+		prefixes[prefix[0]] = prefix[1]
+	
+	#delete PREFIX lines
+	query = delete_sparql_prefix(query)
+	
+	#execute query
+	qres = g.query(query, initNs=prefixes)
 
-	for row in qres.result:
-	  print "%s knows %s" % row" """
+	return qres
