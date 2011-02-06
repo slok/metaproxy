@@ -120,5 +120,8 @@ def sparql_query(query):
 	
 	#execute query
 	qres = g.query(query, initNs=prefixes)
-
+	
+	#close DB
+	g.close()
+	
 	return qres
