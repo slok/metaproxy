@@ -1,35 +1,43 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <title>Django Consultants | Login</title>
+    <title>Meta Proxy | Login</title>
 {% endblock %}
 
 {% block body %}
-    <header>
-        <h2>Login Page</h2>
-    </header>
-
     <section>
-        {% if form.errors %}
-            <p>Your username and password didn't match, please try again.</p>
-        {% endif %}
+        <div id="content-wrap">
+	  <div id="homecontent">
+	    <h2>Login</h2>
 
-        <form method="post" action=".">{%csrf_token%}
-            <p>
-                <label for="id_username">Username:</label>
-                {{ form.username }}
-            </p>
-            <p>
-                <label for="id_password">Password:</label>
-                {{ form.password }}
-            </p>
-            {% if next %}
-                <input type="hidden" name="next" value="{{ next }}" />
-            {% else %}
-                <input type="hidden" name="next" value="/manager/" />
-            {% endif %}
-            <input type="submit" value="login" />
-        </form>
+	    {% if form.errors %}
+            <p>Your username and password didn't match, please try again.</p>
+	    {% endif %}
+	  
+	  <form method="post" action=".">{%csrf_token%}
+	    <div id="homecontent">
+	      <p>
+		  <label for="id_username">Username:</label>
+		  {{ form.username }}
+	      </p>
+	      <p>
+		  <label for="id_password">Password:</label>
+		  {{ form.password }}
+	      </p>
+	      {% if next %}
+		  <input type="hidden" name="next" value="{{ next }}" />
+	      {% else %}
+		  <input type="hidden" name="next" value="/manager/" />
+	      {% endif %}
+	      <p>
+		<input type="submit" value="login" alignment="center" />
+	      </p>
+	    </div>
+	  </form>  
+	  </div>
+	  <div id="line"></div>
+	  <div class="clearfix"></div>
+      </div>
     </section>
 {% endblock %}
 

@@ -146,7 +146,6 @@ a:hover {
 	font-weight: bold;
 }
 
-
 /* Intro */
 
 #intro {
@@ -178,6 +177,29 @@ a:hover {
 	font-size: 28px;
 	color: #000;
 	border-bottom: dotted 1px #999;
+}
+
+/* Manager */
+
+#managerBack {
+	width: 970px;
+	background: #EBEBEB url(../img/introbg-top.png) top repeat-x;
+	height: 300px;
+	margin-top: 10px;
+	margin-left: 10px;
+	border: solid 1px #D9D9D9;
+}
+
+#managerBack h4 {
+	color: #000;
+	font-size: 30px;
+	text-align: center;
+	padding-bottom: 12px;
+	border-bottom: dotted 1px #999;
+}
+
+#managerBack RDFButton {
+	text-align: center;
 }
 
 /* content is king */
@@ -558,3 +580,5 @@ ul span, ol span {
 	clear:both;
 	overflow: hidden;
 }
+
+
