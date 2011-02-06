@@ -36,6 +36,34 @@ def store_RDF(rdfPath):
 	graph.close()
 
 #####################################################################################
+def sparql_prefix_parser(query):
+	""" Parses a "PREFIX" line(s) from a query to obtain all the 
+	variable=url in that line, the strings have to be like this:
+	#PREFIX ex1:  <http://www.example.org/schemas/Concept1>
+	only is possible to parse "PREFIX" in capital letters
+	Keyword arguments:
+	query -- the query to parse
+	
+	Returns a list made of [variable,url] values
+	"""
+	returnList = []
+	while query.count("PREFIX") != 0:
+		#get caracters between X and Y-> [X:Y], so we search the characters
+		variable = query[query.find("PREFIX")+len("PREFIX"):query.find(":")]
+		url = query[query.find("<")+1:query.find(">")]
+		
+		#replace spaces (blanks)
+		variable = variable.replace(" ", "")
+		url = url.replace(" ","")
+		
+		#add to the list
+		returnList.append([variable,url])
+		
+		#delete from the beggining (PREFIX) to the first ">"
+		query = query.replace(query[0:query.find(">")+1], ' ', 1)
+	return returnList
+	
+#####################################################################################
 """def sparql_query(query):
 
 	store = plugin.get('SQLite', Store)('rdfstore.sqlite')
