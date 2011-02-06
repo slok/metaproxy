@@ -51,6 +51,27 @@ def store_RDF(rdfPath):
 
 	print("[OK] RDF stored in Database")
 	graph.close()
+#####################################################################################
+def store_ontology(rdfPath):
+	"""Stores an ontology (RDF) file (path or URL) in the Database
+	Keyword arguments:
+	rdfPath -- the RDF file path, could be a System path or a URL
+	"""
+	configString = 'rdfstore.sqlite'
+
+	store = plugin.get('SQLite', Store)('rdfstore.sqlite')
+
+	#open the DB, if exists doesn't create, if exists, it creates a new one
+	store.open(configString, create=True)
+
+	graph = Graph(store)
+	#Parse the path to the RDF
+	graph.parse(rdfPath)
+	#Commit the changes(insert, delete and modifications in to the database)
+	graph.commit()
+
+	print("[OK] Ontology stored in Database")
+	graph.close()
 
 #####################################################################################
 def sparql_prefix_parser(query):
