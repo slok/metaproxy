@@ -5,7 +5,7 @@ from django.shortcuts import render_to_response
 from django.conf import settings
 
 def main_page(request):
-    response_dict = { 'tabla' : ("X","Y","Z"),  
+    response_dict = { 'proxiedSites' : settings.REVPROXY_SETTINGS,  
     }
     return render_to_response('index.html', response_dict)
 
