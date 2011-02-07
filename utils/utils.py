@@ -22,13 +22,35 @@ from rdflib import Namespace
 from rdflib import Literal
 from rdflib import URIRef
 from rdflib.store import SQLite
-from rdflib.store import Store, NO_STORE, VALID_STORE
+from rdflib.store import Store
 from rdflib.graph import *
 from rdflib.namespace import Namespace
 from rdflib.query import *
 from rdflib import sparql
 from rdflib.query.result import QueryResult
+import urllib2
 
+#####################################################################################
+def download_file(url, destination):
+    """Gets a file from an URL and stores in a destination
+    Keyword arguments:
+    url -- The url of the file to download
+    destination -- The path to store the downloaded file
+    """
+    #get the file from Internet
+    tempFile = urllib2.urlopen(url)
+    parts = []
+    #split the URL(we want to get the last part(file name))
+    for part in url.split('/'):
+        parts.append(part)
+
+    #add to the destination the last part of the splitted url (length -1)
+    destination += parts[len(parts)-1]
+    #open the destination file (with wb flags) and writes the "buffer"
+    output = open(destination, 'wb')
+    output.write(tempFile.read())
+    #close the opened file
+    output.close()
 
 #####################################################################################
 def store_RDF(rdfPath):
