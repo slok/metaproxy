@@ -14,6 +14,7 @@ import restkit
 from restkit.globals import set_manager
 from restkit.manager import Manager
 
+from utils.utils import replace_body_string
 
 restkit.set_logging("debug")
 
@@ -148,22 +149,24 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
 
     print type(resp._body)
 
-    with resp.body_stream() as body:
-        response = HttpResponse(body, status=resp.status_int)
+    #with resp.body_stream() as body:
+    body = resp.body_string()
+    body = replace_body_string(body, "Diego", "Xabier")
+    response = HttpResponse(body, status=resp.status_int)
 
-        # fix response headers
-        for k, v in resp.headers.items():
-            kl = k.lower()
-            if is_hop_by_hop(kl):
-                continue
-            if kl  == "location":
-                response[k] = rewrite_location(request, prefix, v)
-                print v
-                print response[k]
-            else:
-                response[k] = v
+    # fix response headers
+    for k, v in resp.headers.items():
+        kl = k.lower()
+        if is_hop_by_hop(kl):
+            continue
+        if kl  == "location":
+            response[k] = rewrite_location(request, prefix, v)
+            print v
+            print response[k]
+        else:
+            response[k] = v
 
-        return response
+    return response
 
 
 class ProxyTarget(object):
