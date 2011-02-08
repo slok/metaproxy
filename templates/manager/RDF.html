@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <title>Meta Proxy</title>
+{% endblock %}
+
+{%block body %}
+
+   <div id="managerBack">
+	<h2>Upload</h2>
+	{% if upload_error %}
+    <div class="error">{{ upload_error }}</div>
+    {% endif %}
+    <p>
+    <form action="." method="post" enctype="multipart/form-data">{% csrf_token %}
+		<p><input type="file" name="photo"/></p>
+        <p><input type="submit"/></p>
+    </form>
+    </p>
+	</div>
+    <div id="line"></div>
+    <div class="clearfix"></div>
+{% endblock %}
+
+ 
