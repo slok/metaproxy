@@ -43,7 +43,7 @@ def download_file(url, destination):
     #split the URL(we want to get the last part(file name))
     for part in url.split('/'):
         parts.append(part)
-    
+    #if the URL isn't pointing to a file, raise exception
     if parts[len(parts)-1] == '' :
         raise Exception, "The URL has to point to a concrete file"
     else:
@@ -52,6 +52,7 @@ def download_file(url, destination):
         #open the destination file (with wb flags) and writes the "buffer"
         output = open(destination, 'wb')
         output.write(tempFile.read())
+        
         #close the opened file
         output.close()
 #####################################################################################
@@ -78,8 +79,8 @@ def download_rdf_file(url, destination):
         output = open(destination, 'wb')
         output.write(tempFile.read())
 
-    #close the opened file
-    output.close()
+        #close the opened file
+        output.close()
 #####################################################################################
 def store_RDF(rdfPath):
     """Stores an RDF file (path or URL) in the Database
