@@ -1,5 +1,5 @@
 from django import forms
 
-class UploadFileFormForm(forms.Form):
+class UploadFileForm(forms.Form):
     name = forms.CharField(required=True)
 

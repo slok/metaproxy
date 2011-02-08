@@ -1,6 +1,8 @@
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
+from django.template import RequestContext
+
 
 @login_required
 def manager_main_page(request):
@@ -12,7 +14,7 @@ take them to the login page.
 
 
 def manager_rdf_upload_page(request):
-  return render_to_response('manager/RDF.html')
+  return render_to_response('manager/RDF.html', context_instance=RequestContext(request))
 
 def manager_ontologies_upload_page(request):
   pass
@@ -36,6 +38,7 @@ def handle_uploaded_file(f):
 
 """
 def upload_file(request):
+    print "hola hola hola"
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
