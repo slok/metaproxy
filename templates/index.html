@@ -27,9 +27,9 @@
 	<div id="homecontent">
 	  <h2>Proxied Sites</h2>
 	  <ul>
-	    {% for item in tabla %}
-	      <li>{{ item }}</li>
-	    {% endfor %}
+	    {% for item in proxiedSites %}
+        <li><a href="/proxy/{{ item.0 }}">{{ item.0 }}</a></li>
+        {% endfor %}
 	  </ul>
 	</div>
 	<div id="line"></div>
