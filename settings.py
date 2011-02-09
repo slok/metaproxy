@@ -89,6 +89,7 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
     os.path.join(SITE_ROOT, 'templates'),
 )
+
 #REVPROXY_CONN_MGR = "restkit.conn.gevent_manager:GeventConnectionManager"
 
 REVPROXY_SETTINGS = [

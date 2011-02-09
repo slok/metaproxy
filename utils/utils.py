@@ -43,15 +43,44 @@ def download_file(url, destination):
     #split the URL(we want to get the last part(file name))
     for part in url.split('/'):
         parts.append(part)
+    #if the URL isn't pointing to a file, raise exception
+    if parts[len(parts)-1] == '' :
+        raise Exception, "The URL has to point to a concrete file"
+    else:
+        #add to the destination the last part of the splitted url (length -1)
+        destination += parts[len(parts)-1]
+        #open the destination file (with wb flags) and writes the "buffer"
+        output = open(destination, 'wb')
+        output.write(tempFile.read())
+        
+        #close the opened file
+        output.close()
+#####################################################################################
+def download_rdf_file(url, destination):
+    """Gets an RDF file from an URL and stores in a destination
+    Keyword arguments:
+    url -- The url of the file to download
+    destination -- The path to store the downloaded file
+    """
+    #get the file from Internet
+    tempFile = urllib2.urlopen(url)
+    parts = []
+    #split the URL(we want to get the last part(file name))
+    for part in url.split('/'):
+        parts.append(part)
+    
+    #check if the url is an RDF file, if not throw an exception
+    if parts[len(parts)-1] == '' or not parts[len(parts)-1].endswith('.rdf'):
+        raise Exception, "The url has to point to an rdf file"
+    else:
+        #add to the destination the last part of the splitted url (length -1)
+        destination += parts[len(parts)-1]
+        #open the destination file (with wb flags) and writes the "buffer"
+        output = open(destination, 'wb')
+        output.write(tempFile.read())
 
-    #add to the destination the last part of the splitted url (length -1)
-    destination += parts[len(parts)-1]
-    #open the destination file (with wb flags) and writes the "buffer"
-    output = open(destination, 'wb')
-    output.write(tempFile.read())
-    #close the opened file
-    output.close()
-
+        #close the opened file
+        output.close()
 #####################################################################################
 def store_RDF(rdfPath):
     """Stores an RDF file (path or URL) in the Database
