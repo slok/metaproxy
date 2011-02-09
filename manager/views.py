@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.template import RequestContext
 
+from manager.forms import UploadFileForm
+from django.conf import settings
 
 @login_required
 def manager_main_page(request):
@@ -14,7 +16,14 @@ take them to the login page.
 
 
 def manager_rdf_upload_page(request):
-  return render_to_response('manager/RDF.html', context_instance=RequestContext(request))
+   if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            handle_uploaded_file(request.FILES['file'])
+            return render_to_response('manager/thanks.html')
+   else:
+        form = UploadFileForm()
+   return render_to_response('manager/RDF.html', {'form': form}, context_instance=RequestContext(request))
 
 def manager_ontologies_upload_page(request):
   pass
@@ -29,25 +38,15 @@ def manager_proxied_sites_page(request):
   pass
 
 def handle_uploaded_file(f):
-    destination = open('some/file/name.txt', 'wb+')
+    filePath = settings.UPLOAD_URL
+    filePath += f.name
+    destination = open(filePath, 'wb+')
     for chunk in f.chunks():
         destination.write(chunk)
     destination.close()
-################################################################
-"""
 
-"""
-def upload_file(request):
-    print "hola hola hola"
-    if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            handle_uploaded_file(request.FILES['file'])
-            return HttpResponseRedirect('/success/url/')
-    else:
-        form = UploadFileForm()
-    return render_to_response('manager/RDF.html')
-  
- 
+
+
+
   
   
