@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <title>Meta Proxy</title>
+{% endblock %}
+
+{%block body %}
+
+   <div id="managerBack">
+	<h2>Insert in Database</h2>
+        <p>
+            {% if insert %}
+            <p>Ontology inserted in DB</p>
+            {% endif %}
+	  
+            <form action="/manager/ontologies/" method="post" enctype="multipart/form-data">{% csrf_token %}
+                <p>
+                    {{ form.as_p }}
+                </p>
+                <p><input type="submit" value="Submit"/></p>
+            </form>
+        </p>
+        
+    </div>
+    <div id="homecontent">
+        <p>
+            <table class="stats" cellspacing="0">
+            <tr>
+                <th >Name</th>
+                <th >URI</th>
+            </tr>
+            {% for item in ontologies %}
+            <tr>
+                <td>{{item.0}}</td>
+                <td>{{item.1}}</td>
+            </tr>
+            {% endfor %}  
+            </table> 
+        </p>
+    </div>
+    <div id="line"></div>
+    <div class="clearfix"></div>
+{% endblock %}
+
+ 

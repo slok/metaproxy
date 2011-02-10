@@ -571,6 +571,34 @@ ul span, ol span {
 	color: #000;
 }
 	
+table.stats
+{text-align: center;
+font-family: Verdana, Geneva, Arial, Helvetica, sans-serif ;
+font-weight: normal;
+font-size: 14px;
+color: #fff;
+/*width: 300px;*/
+background-color: #666;
+border: 0px;
+border-collapse: collapse;
+border-spacing: 0px;}
+
+table.stats td
+{background-color: #CCC;
+color: #000;
+padding: 4px;
+text-align: left;
+border: 1px #fff solid;}
+
+table.stats th
+{background-color: #666;
+color: #fff;
+padding: 4px;
+text-align: left;
+border: 1px #fff solid;
+border-bottom: 3px #fff solid;
+font-size: 20px;
+font-weight: bold;} 
 	
 .clearfix {
 	clear:both;
