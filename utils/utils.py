@@ -86,6 +86,9 @@ def store_RDF(rdfPath, user, password, db):
     """Stores an RDF file (path or URL) in the Database
     Keyword arguments:
     rdfPath -- the RDF file path, could be a System path or a URL
+    user -- The user for accesing the DB
+    password -- The password of the user for accesing the DB
+    db -- The DB that we are going to access
     """
     #config string: host=localhost,user=XXXX,password=YYYYYYYYY,db=ZZZZZ
     #Making the configuration string
@@ -145,7 +148,10 @@ def sparql_prefix_parser(query):
     only is possible to parse "PREFIX" in capital letters
     Keyword arguments:
     query -- the query to parse
-
+    user -- The user for accesing the DB
+    password -- The password of the user for accesing the DB
+    db -- The DB that we are going to access
+    
     Returns a list made of [variable,url] values
     """
     returnList = []
