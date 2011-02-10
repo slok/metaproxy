@@ -7,15 +7,25 @@
 {%block body %}
 
    <div id="managerBack">
+   <div id="helpcontent">
 	<h2>Upload</h2>
     <p>
+        <ul>
+            <li><b>Step 1:</b> Select the RDF file to store in the database <b>(1) </b>by loading it from your computer <b>or (2)</b> by indicating the URL where the RDF file is.</li>
+            <li><b>Step 2:</b> Select the corresponding database to store the RDF file. <b>(3)</b></li>
+            <li><b>Step 3:</b> Press the <i>"Submit"</i> button.</li>
+        </ul>
+    </p>
+    </div>
+    
+    <p>
     <form action="." method="post" enctype="multipart/form-data">{% csrf_token %}
-        <p>
+        <p><div id="formContent">
         {{ form.as_p }}
         {% if upload_error %}
             <div class="error">{{ upload_error }}</div>
         {% endif %}
-        </p>
+        </div></p>
         <p><input type="submit" value="Submit"/></p>
     </form>
     </p>
