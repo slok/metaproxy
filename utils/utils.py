@@ -87,12 +87,16 @@ def store_RDF(rdfPath):
     Keyword arguments:
     rdfPath -- the RDF file path, could be a System path or a URL
     """
-    configString = 'rdfstore.sqlite'
+    configString = "host=localhost,user=root,password=larrakoetxea,db=rdfstore"
+    #connect to database
+    store = plugin.get('MySQL', Store)('rdfstore')
 
-    store = plugin.get('SQLite', Store)('rdfstore.sqlite')
-
-    #open the DB, if exists doesn't create, if exists, it creates a new one
-    store.open(configString, create=True)
+    #Try to open a created DB, if there isn't catch the exception to
+    #create a new one
+    try:
+        store.open(configString,create=False)
+    except:
+        store.open(configString,create=True)
 
     graph = Graph(store)
     #Parse the path to the RDF
@@ -103,17 +107,19 @@ def store_RDF(rdfPath):
     print("[OK] RDF stored in Database")
     graph.close()
 #####################################################################################
-def store_ontology(rdfPath):
-    """Stores an ontology (RDF) file (path or URL) in the Database
-    Keyword arguments:
-    rdfPath -- the RDF file path, could be a System path or a URL
-    """
-    configString = 'rdfstore.sqlite'
-
-    store = plugin.get('SQLite', Store)('rdfstore.sqlite')
-
-    #open the DB, if exists doesn't create, if exists, it creates a new one
-    store.open(configString, create=True)
+"""def store_ontology(rdfPath):
+    """#Stores an ontology (RDF) file (path or URL) in the Database
+    #Keyword arguments:
+    #rdfPath -- the RDF file path, could be a System path or a URL
+"""
+    configString = "host=localhost,user=root,password=larrakoetxea,db=rdfstore"
+    #connect to database
+    store = plugin.get('MySQL', Store)('rdfstore')
+    
+    try:
+        store.open(configString,create=False)
+    except:
+        store.open(configString,create=True)
 
     graph = Graph(store)
     #Parse the path to the RDF
@@ -123,7 +129,7 @@ def store_ontology(rdfPath):
 
     print("[OK] Ontology stored in Database")
     graph.close()
-
+"""
 #####################################################################################
 def sparql_prefix_parser(query):
     """ Parses a "PREFIX" line(s) from a query to obtain all the 
@@ -169,15 +175,21 @@ def sparql_query(query):
     TODO: Return a good formated string and not a raw result
     """	
     prefixes = {}
+    configString = "host=localhost,user=root,password=larrakoetxea,db=rdfstore"
     #connect to database
-    store = plugin.get('SQLite', Store)('rdfstore.sqlite')
-    store.open('rdfstore.sqlite', create=True)
-
+    store = plugin.get('MySQL', Store)('rdfstore')
+    #Try to open a created DB, if there isn't catch the exception to
+    #create a new one
+    try:
+        store.open(configString,create=False)
+    except:
+        store.open(configString,create=True)
+        
     #load the graph
     g = ConjunctiveGraph(store)
 
-    #register the sparql and SQLite plugin for the queries
-    plugin.register('SQLite', Store, 'rdflib.store.SQLite', 'SQLite')
+    #register the sparql and Mysqlite plugin for the queries
+    plugin.register('MySQL', Store, 'rdflib.store.MySQL', 'MySQL')
     plugin.register('sparql', sparql.Processor,
          'rdflib.sparql.bison.Processor', 'Processor')
     plugin.register('SPARQLQueryResult', QueryResult,
