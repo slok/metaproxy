@@ -148,9 +148,6 @@ def sparql_prefix_parser(query):
     only is possible to parse "PREFIX" in capital letters
     Keyword arguments:
     query -- the query to parse
-    user -- The user for accesing the DB
-    password -- The password of the user for accesing the DB
-    db -- The DB that we are going to access
     
     Returns a list made of [variable,url] values
     """
@@ -183,7 +180,10 @@ def sparql_query(query, user, password, db):
     """ Makes a sparql query to the SQLite database and returns a result
     Keyword arguments:
     query -- the query to execute
-
+    user -- The user for accesing the DB
+    password -- The password of the user for accesing the DB
+    db -- The DB that we are going to access
+    
     Returns a result (rdflib result)
     TODO: Return a good formated string and not a raw result
     """	
