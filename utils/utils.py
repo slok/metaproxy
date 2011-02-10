@@ -82,14 +82,21 @@ def download_rdf_file(url, destination):
         #close the opened file
         output.close()
 #####################################################################################
-def store_RDF(rdfPath):
+def store_RDF(rdfPath, user, password, db):
     """Stores an RDF file (path or URL) in the Database
     Keyword arguments:
     rdfPath -- the RDF file path, could be a System path or a URL
     """
-    configString = "host=localhost,user=root,password=larrakoetxea,db=rdfstore"
+    #config string: host=localhost,user=XXXX,password=YYYYYYYYY,db=ZZZZZ
+    #Making the configuration string
+    configString = "host=localhost,user="
+    configString += user
+    configString += ",password="
+    configString += password
+    configString += ",db="
+    configString += db
     #connect to database
-    store = plugin.get('MySQL', Store)('rdfstore')
+    store = plugin.get('MySQL', Store)(db)
 
     #Try to open a created DB, if there isn't catch the exception to
     #create a new one
@@ -166,7 +173,7 @@ def delete_sparql_prefix(query):
 
     return query
 #####################################################################################
-def sparql_query(query):
+def sparql_query(query, user, password, db):
     """ Makes a sparql query to the SQLite database and returns a result
     Keyword arguments:
     query -- the query to execute
@@ -175,9 +182,16 @@ def sparql_query(query):
     TODO: Return a good formated string and not a raw result
     """	
     prefixes = {}
-    configString = "host=localhost,user=root,password=larrakoetxea,db=rdfstore"
+    #config string: host=localhost,user=XXXX,password=YYYYYYYYY,db=ZZZZZ
+    #Making the configuration string
+    configString = "host=localhost,user="
+    configString += user
+    configString += ",password="
+    configString += password
+    configString += ",db="
+    configString += db
     #connect to database
-    store = plugin.get('MySQL', Store)('rdfstore')
+    store = plugin.get('MySQL', Store)(db)
     #Try to open a created DB, if there isn't catch the exception to
     #create a new one
     try:
