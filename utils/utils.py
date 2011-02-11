@@ -176,16 +176,16 @@ def delete_sparql_prefix(query):
 
     return query
 #####################################################################################
-def sparql_query(query, user, password, db):
+def sparql_query(query, user, password, db, output):
     """ Makes a sparql query to the SQLite database and returns a result
     Keyword arguments:
     query -- the query to execute
     user -- The user for accesing the DB
     password -- The password of the user for accesing the DB
     db -- The DB that we are going to access
+    output -- the output type could be: xml, json or python object
     
     Returns a result (rdflib result)
-    TODO: Return a good formated string and not a raw result
     """	
     prefixes = {}
     #config string: host=localhost,user=XXXX,password=YYYYYYYYY,db=ZZZZZ
@@ -227,5 +227,14 @@ def sparql_query(query, user, password, db):
 
     #close DB
     g.close()
+    
+    #select the type of output
+    
+    if output == 'xml':
+        qres = qres.serialize('xml')
+    elif output == 'json':
+        qres = qres.serialize('json')
+    else:
+        qres = qres.serialize('python')
 
     return qres

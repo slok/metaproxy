@@ -9,14 +9,18 @@
     <div id="managerBack">
     <h2>SparQL query result</h2>
         <p>
-            <table align="center" class="stats" cellspacing="0">
-            {%for item in resultList%}
-                <tr>
-                    <td>{{item.0}}</td>
-                    <td>{{item.1}}</td>
-                </tr>
-            {% endfor %}
-            </table> 
+            {%if output == "python"%}
+                <table align="center" class="stats" cellspacing="0">
+                {%for item in resultList%}
+                    <tr>
+                        <td>{{item.0}}</td>
+                        <td>{{item.1}}</td>
+                    </tr>
+                {% endfor %}
+                </table> 
+            {%else%}
+                {{resultList}}
+            {%endif%}
         </p>
     </div>
     <div id="line"></div>

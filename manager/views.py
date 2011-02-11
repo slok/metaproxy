@@ -101,14 +101,18 @@ def manager_sparql_queries_page(request):
             #prepare the database and the query
             db = form.cleaned_data['db']
             query =  form.cleaned_data['query']
+            output =  form.cleaned_data['output']
             #execute the query
-            qres = sparql_query(query, "root", "larrakoetxea", db) 
+            qres = sparql_query(query, "root", "larrakoetxea", db, output) 
             resultList = []
-            #transform the query result to a list
-            for row in qres.result:
-                resultList.append((row[0].format(),row[1].format())) 
+            #transform the query result to a list if is python
+            if output == "python":
+                for row in qres.result:
+                    resultList.append((row[0].format(),row[1].format()))
+            else:
+                resultList = qres
             #response with the html page and the results
-            return render_to_response('manager/sparqlresult.html', {'resultList': resultList},context_instance=RequestContext(request))
+            return render_to_response('manager/sparqlresult.html', {'resultList': resultList, 'output':output},context_instance=RequestContext(request))
     else:
         form = SparqlQuery()
         
