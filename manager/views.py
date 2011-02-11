@@ -87,21 +87,35 @@ def manager_ontologies_page(request):
         ontologies.append((e.name, e.url))
         
     #the data for the html (variables...)
-    pageDate = {'form': form,
+    pageData = {'form': form,
     'ontologies':ontologies,
     'insert':insert,
     }
     #returning html, data, csrf token...
-    return render_to_response('manager/ontology.html', pageDate, context_instance=RequestContext(request))
+    return render_to_response('manager/ontology.html', pageData, context_instance=RequestContext(request))
 
 def manager_sparql_queries_page(request):
-  pass
-
-def manager_sparql_results_page(request):
-  pass
-
-def manager_proxied_sites_page(request):
-  pass
+    if request.method == 'POST':
+        form = SparqlQuery(request.POST)
+        if form.is_valid():
+            #prepare the database and the query
+            db = form.cleaned_data['db']
+            query =  form.cleaned_data['query']
+            #execute the query
+            qres = sparql_query(query, "root", "larrakoetxea", db) 
+            resultList = []
+            #transform the query result to a list
+            for row in qres.result:
+                resultList.append((row[0].format(),row[1].format())) 
+            #response with the html page and the results
+            return render_to_response('manager/sparqlresult.html', {'resultList': resultList},context_instance=RequestContext(request))
+    else:
+        form = SparqlQuery()
+        
+    pageData = {'form': form,
+    }
+    #returning html, data, csrf token...
+    return render_to_response('manager/sparql.html', pageData, context_instance=RequestContext(request))
 
 def handle_uploaded_file(f):
     filePath = settings.UPLOAD_URL
