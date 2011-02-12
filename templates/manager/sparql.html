@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <title>Meta Proxy</title>
+{% endblock %}
+
+{%block body %}
+
+   <div id="managerBack">
+	<h2>SparQL queries</h2>
+        <p>
+            {% if insert %}
+            <p>Sparql</p>
+            {% endif %}
+	  
+            <form action="/manager/sparql/" method="post" enctype="multipart/form-data">{% csrf_token %}
+                <p>
+                    {{ form.as_p }}
+                </p>
+                <p><input type="submit" value="Submit"/></p>
+            </form>
+        </p>
+        
+    </div>
+    <div id="line"></div>
+    <div class="clearfix"></div>
+{% endblock %}
+
+ 

@@ -82,17 +82,31 @@ def download_rdf_file(url, destination):
         #close the opened file
         output.close()
 #####################################################################################
-def store_RDF(rdfPath):
+def store_RDF(rdfPath, user, password, db):
     """Stores an RDF file (path or URL) in the Database
     Keyword arguments:
     rdfPath -- the RDF file path, could be a System path or a URL
+    user -- The user for accesing the DB
+    password -- The password of the user for accesing the DB
+    db -- The DB that we are going to access
     """
-    configString = 'rdfstore.sqlite'
+    #config string: host=localhost,user=XXXX,password=YYYYYYYYY,db=ZZZZZ
+    #Making the configuration string
+    configString = "host=localhost,user="
+    configString += user
+    configString += ",password="
+    configString += password
+    configString += ",db="
+    configString += db
+    #connect to database
+    store = plugin.get('MySQL', Store)(db)
 
-    store = plugin.get('SQLite', Store)('rdfstore.sqlite')
-
-    #open the DB, if exists doesn't create, if exists, it creates a new one
-    store.open(configString, create=True)
+    #Try to open a created DB, if there isn't catch the exception to
+    #create a new one
+    try:
+        store.open(configString,create=False)
+    except:
+        store.open(configString,create=True)
 
     graph = Graph(store)
     #Parse the path to the RDF
@@ -103,17 +117,19 @@ def store_RDF(rdfPath):
     print("[OK] RDF stored in Database")
     graph.close()
 #####################################################################################
-def store_ontology(rdfPath):
-    """Stores an ontology (RDF) file (path or URL) in the Database
-    Keyword arguments:
-    rdfPath -- the RDF file path, could be a System path or a URL
-    """
-    configString = 'rdfstore.sqlite'
-
-    store = plugin.get('SQLite', Store)('rdfstore.sqlite')
-
-    #open the DB, if exists doesn't create, if exists, it creates a new one
-    store.open(configString, create=True)
+"""def store_ontology(rdfPath):
+    """#Stores an ontology (RDF) file (path or URL) in the Database
+    #Keyword arguments:
+    #rdfPath -- the RDF file path, could be a System path or a URL
+"""
+    configString = "host=localhost,user=root,password=larrakoetxea,db=rdfstore"
+    #connect to database
+    store = plugin.get('MySQL', Store)('rdfstore')
+    
+    try:
+        store.open(configString,create=False)
+    except:
+        store.open(configString,create=True)
 
     graph = Graph(store)
     #Parse the path to the RDF
@@ -123,7 +139,7 @@ def store_ontology(rdfPath):
 
     print("[OK] Ontology stored in Database")
     graph.close()
-
+"""
 #####################################################################################
 def sparql_prefix_parser(query):
     """ Parses a "PREFIX" line(s) from a query to obtain all the 
@@ -132,7 +148,7 @@ def sparql_prefix_parser(query):
     only is possible to parse "PREFIX" in capital letters
     Keyword arguments:
     query -- the query to parse
-
+    
     Returns a list made of [variable,url] values
     """
     returnList = []
@@ -160,24 +176,40 @@ def delete_sparql_prefix(query):
 
     return query
 #####################################################################################
-def sparql_query(query):
+def sparql_query(query, user, password, db, output):
     """ Makes a sparql query to the SQLite database and returns a result
     Keyword arguments:
     query -- the query to execute
-
+    user -- The user for accesing the DB
+    password -- The password of the user for accesing the DB
+    db -- The DB that we are going to access
+    output -- the output type could be: xml, json or python object
+    
     Returns a result (rdflib result)
-    TODO: Return a good formated string and not a raw result
     """	
     prefixes = {}
+    #config string: host=localhost,user=XXXX,password=YYYYYYYYY,db=ZZZZZ
+    #Making the configuration string
+    configString = "host=localhost,user="
+    configString += user
+    configString += ",password="
+    configString += password
+    configString += ",db="
+    configString += db
     #connect to database
-    store = plugin.get('SQLite', Store)('rdfstore.sqlite')
-    store.open('rdfstore.sqlite', create=True)
-
+    store = plugin.get('MySQL', Store)(db)
+    #Try to open a created DB, if there isn't catch the exception to
+    #create a new one
+    try:
+        store.open(configString,create=False)
+    except:
+        store.open(configString,create=True)
+        
     #load the graph
     g = ConjunctiveGraph(store)
 
-    #register the sparql and SQLite plugin for the queries
-    plugin.register('SQLite', Store, 'rdflib.store.SQLite', 'SQLite')
+    #register the sparql and Mysqlite plugin for the queries
+    plugin.register('MySQL', Store, 'rdflib.store.MySQL', 'MySQL')
     plugin.register('sparql', sparql.Processor,
          'rdflib.sparql.bison.Processor', 'Processor')
     plugin.register('SPARQLQueryResult', QueryResult,
@@ -195,6 +227,15 @@ def sparql_query(query):
 
     #close DB
     g.close()
+    
+    #select the type of output
+    
+    if output == 'xml':
+        qres = qres.serialize('xml')
+    elif output == 'json':
+        qres = qres.serialize('json')
+    else:
+        qres = qres.serialize('python')
 
     return qres
 #####################################################################################

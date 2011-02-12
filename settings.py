@@ -12,10 +12,10 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'django_metaproxy.sqlite',                      # Or path to database file if using sqlite3.
-        'USER': '',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
+        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'django',                      # Or path to database file if using sqlite3.
+        'USER': 'django',                      # Not used with sqlite3.
+        'PASSWORD': 'django',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
@@ -62,6 +62,9 @@ ADMIN_MEDIA_PREFIX = '/media/'
 
 # URL of the login page.
 LOGIN_URL = '/login/'
+
+# URL of the uploaded file.
+UPLOAD_URL = 'static/uploads/'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'c1f*vfddx%e$_-^i5^2y)hw6ee&2zz=z2jm8@a(1q__!+l9mks'
