@@ -239,7 +239,3 @@ def sparql_query(query, user, password, db, output):
 
     return qres
 #####################################################################################
-
-def replace_body_string(body, strOrig, strRepl):
-    body = body.replace(strOrig, strRepl)
-    return body

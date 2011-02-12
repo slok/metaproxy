@@ -14,7 +14,7 @@ import restkit
 from restkit.globals import set_manager
 from restkit.manager import Manager
 
-from utils.utils import replace_body_string
+from scripts.ModifyBody import *
 
 restkit.set_logging("debug")
 
@@ -151,7 +151,10 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
 
     #with resp.body_stream() as body:
     body = resp.body_string()
-    body = replace_body_string(body, "Diego", "Xabier")
+#-----------------------------------------------------------------------
+    mb = ModifyBody()
+    body = mb.body_modification_logic(body)
+#-----------------------------------------------------------------------   
     response = HttpResponse(body, status=resp.status_int)
 
     # fix response headers
