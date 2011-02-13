@@ -6,6 +6,7 @@ from manager.models import Ontology
 from manager.forms import *
 from django.conf import settings
 from utils.utils import *
+import xml.dom.minidom
 
 @login_required
 def manager_main_page(request):
@@ -109,7 +110,11 @@ def manager_sparql_queries_page(request):
             if output == "python":
                 for row in qres.result:
                     resultList.append((row[0].format(),row[1].format()))
-            else:
+            elif(output == "xml"):
+                #pretiffy the XML with indentation
+                xmlQres = xml.dom.minidom.parseString(qres)
+                resultList = xmlQres.toprettyxml()
+            else: 
                 resultList = qres
             #response with the html page and the results
             return render_to_response('manager/sparqlresult.html', {'resultList': resultList, 'output':output},context_instance=RequestContext(request))
