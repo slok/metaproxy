@@ -14,8 +14,6 @@ import restkit
 from restkit.globals import set_manager
 from restkit.manager import Manager
 
-from scripts.ModifyBody import *
-
 restkit.set_logging("debug")
 
 from revproxy.util import absolute_uri, header_name, coerce_put_post, \
@@ -152,7 +150,30 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
     #with resp.body_stream() as body:
     body = resp.body_string()
 #-----------------------------------------------------------------------
-    mb = ModifyBody()
+    #get path and split in "/" parts
+    actualPath = request.get_full_path()
+    parts = []
+    for part in actualPath.split('/'):
+        parts.append(part)
+    #create the import string. Ex: scripts.dipina.ModifyBody
+    importString = "scripts."
+    importString += parts[2] #The 3rd position is where the id is
+    importString += ".ModifyBody"
+    
+    #import in a local var
+    mBImport = __import__(importString, fromlist=['*'])
+    
+    """
+    if "dipina" in actualPath:
+        from scripts.dipina.ModifyBody import *
+        print "importado!!!!!"
+    elif "dbujan" in actualPath:
+        from scripts.dbujan.ModifyBody import *
+    #...
+    """
+    print importString
+    print mBImport
+    mb = mBImport.ModifyBody()
     body = mb.body_modification_logic(body)
 #-----------------------------------------------------------------------   
     response = HttpResponse(body, status=resp.status_int)

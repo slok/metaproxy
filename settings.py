@@ -97,8 +97,8 @@ TEMPLATE_DIRS = (
 
 REVPROXY_SETTINGS = [
     ("google", "http://google.com"),
-	("Diego_Lopez_de_Ipina", "http://paginaspersonales.deusto.es/dipina/"),
-	("David_Bujan", "http://paginaspersonales.deusto.es/dbujan/"),
+	("dipina", "http://paginaspersonales.deusto.es/dipina/"),
+	("dbujan", "http://paginaspersonales.deusto.es/dbujan/"),
 	("slok", "http://slok.homelinux.com")
 ]
 
