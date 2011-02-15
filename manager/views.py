@@ -17,8 +17,14 @@ take them to the login page.
     return render_to_response('manager/index.html')
 
 """
-TODOs: - Validation control (check if both of the fields in the form are empty)
+TODOs: - Validation control:
+            - Check the types of the uploaded files (e.g.: if the 
+              uploaded file in the Scripts page is eventually an 
+              script file)
+            - Check if the form fields are empty
        - Progress bar ?? :P
+       - Revise the manager_rdf_upload_page. It doesn't store the RDF
+         file properly in the DB.
 """
 
 def manager_rdf_upload_page(request):
@@ -51,7 +57,7 @@ def manager_rdf_upload_page(request):
                 handle_uploaded_file(localFile)
                 filePath = settings.UPLOAD_URL + localFile.name
                 
-        # Store the RDF file in the DB
+        # [FIXME] Store the RDF file in the DB (doesn't work PROPERLY!)
         store_RDF(filePath,"root","darkside","rdfstore")
         return render_to_response('manager/thanks.html')
         
@@ -126,11 +132,35 @@ def manager_sparql_queries_page(request):
     #returning html, data, csrf token...
     return render_to_response('manager/sparql.html', pageData, context_instance=RequestContext(request))
 
+def manager_scripts_page(request):
+    if request.method == 'POST':
+        form = UploadScriptForm(request.POST, request.FILES)
+        if form.is_valid(): 
+            localFile = request.FILES['file']
+            db = form.cleaned_data['dataBases']
+            handle_uploaded_script(localFile, db)
+        return render_to_response('manager/thanks.html')
+        
+    else:
+        form = UploadScriptForm()
+    return render_to_response('manager/scripts.html', {'form': form}, 
+    context_instance=RequestContext(request))
+
 def handle_uploaded_file(f):
     filePath = settings.UPLOAD_URL
     filePath += f.name
     destination = open(filePath, 'wb+')
     for chunk in f.chunks():
+        destination.write(chunk)
+    destination.close()
+
+def handle_uploaded_script(s, db):
+    filePath = settings.UPLOAD_URL_SCRIPTS
+    filePath += db
+    filePath += '/'
+    filePath += 'ModifyBody.py'    
+    destination = open(filePath, 'wb+')
+    for chunk in s.chunks():
         destination.write(chunk)
     destination.close()
 

@@ -66,6 +66,9 @@ LOGIN_URL = '/login/'
 # URL of the uploaded file.
 UPLOAD_URL = 'static/uploads/'
 
+# Base URL of the uploaded script.
+UPLOAD_URL_SCRIPTS = 'scripts/'
+
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'c1f*vfddx%e$_-^i5^2y)hw6ee&2zz=z2jm8@a(1q__!+l9mks'
 

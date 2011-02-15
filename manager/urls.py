@@ -8,6 +8,7 @@ urlpatterns = patterns('',
     (r'^rdf/$', manager_rdf_upload_page),
     (r'^ontologies/$', manager_ontologies_page),
     (r'^sparql/$', manager_sparql_queries_page),
+    (r'^scripts/$', manager_scripts_page),
 
 )
 
