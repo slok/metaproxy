@@ -1,6 +1,8 @@
 {% extends "base.html" %}
+{% load pygmentize_tags %}
 
 {% block head %}
+<link href="/static/css/pygments-black.css" rel="stylesheet" type="text/css"/>
     <title>Meta Proxy</title>
 {% endblock %}
 
@@ -12,6 +14,20 @@
     <p>
         <ul>
             <li><b>Step 1:</b> Select the script to store in the database by loading it from your computer. </li>
+            <ul>
+                <li><b>Step 1.1:</b> The script must implement ModifyBodyBase abstract class, for example: </li>
+                <div id="code" style="max-width:600px;">
+                {% pygmentize 'python' %}
+import abc
+from scripts.ModifyBodyBase import ModifyBodyBase
+
+class ModifyBody(ModifyBodyBase):
+    def body_modification_logic(self, body):
+        body = body.replace('something', 'other thing') 
+        return body
+                {% endpygmentize %}
+                </div>
+            </ul>
             <li><b>Step 2:</b> Select the corresponding database to store the script. </li>
             <li><b>Step 3:</b> Press the <i>"Submit"</i> button.</li>
         </ul>

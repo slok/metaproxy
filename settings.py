@@ -115,5 +115,6 @@ INSTALLED_APPS = (
     'manager',
     'revproxy',
     'gunicorn',
-    'utils'
+    'utils',
+    'pygmentize'
 )
