@@ -628,8 +628,13 @@ font-weight: bold;}
 #code
 {
     padding-left:20px; 
-    padding-top:0px; 
+    padding-bottom:20px; 
     padding-right:20px;
+    padding-top:20px;
+}
+
+#codeBox
+{
     max-height:500px;
     overflow:auto;
 }

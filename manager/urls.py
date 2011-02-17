@@ -9,6 +9,7 @@ urlpatterns = patterns('',
     (r'^ontologies/$', manager_ontologies_page),
     (r'^sparql/$', manager_sparql_queries_page),
     (r'^scripts/$', manager_scripts_page),
+    (r'^scripts/(?P<id>\w+)/$', manager_scripts_code_page),
 
 )
 

@@ -148,17 +148,11 @@ def manager_scripts_page(request):
     context_instance=RequestContext(request))
 
 def manager_scripts_code_page(request, id):
-    try:
-        #get the script in a string
-        strScript = read_file_Script(id)
-        #insert the script in the variable of datas
-        pageData = {'id': id,
-        'strScript': strScript,
-        }
-        return render_to_response('manager/scriptsCode.html', pageData)
-    except:
-        return HttpResponseRedirect("/manager/scripts")
-
+    strScript = read_file_Script(id)
+    pageData = {
+    'strScript': strScript,
+    }
+    return render_to_response('manager/scriptsCode.html', pageData)
 
 def handle_uploaded_file(f):
     filePath = settings.UPLOAD_URL
@@ -179,7 +173,6 @@ def handle_uploaded_script(s, db):
     destination.close()
 
 def read_file_Script(script):
-    #make the url where the script is
     filePath = settings.UPLOAD_URL_SCRIPTS
     filePath += script
     filePath += '/'

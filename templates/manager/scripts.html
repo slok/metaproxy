@@ -16,7 +16,7 @@
             <li><b>Step 1:</b> Select the script to store in the database by loading it from your computer. </li>
             <ul>
                 <li><b>Step 1.1:</b> The script must implement ModifyBodyBase abstract class, for example: </li>
-                <div id="code" style="max-width:600px;">
+                <div id="codeBox" style="max-width:600px;">
                 {% pygmentize 'python' %}
 import abc
 from scripts.ModifyBodyBase import ModifyBodyBase
@@ -46,8 +46,36 @@ class ModifyBody(ModifyBodyBase):
     </form>
     </p>
 	</div>
+    <div id="managerBack">
+    <div id="helpcontent">
+        <h2>Actual script (links)</h2>
+        <p>
+            <table align="center" class="stats" cellspacing="0">
+            <tr>
+                <th >Name</th>
+                <th >URI</th>
+                <th >Script</th>
+            </tr>
+            {% for item in scriptUrls %}
+            <tr>
+                <td>{{item.0}}</td>
+                <td>{{item.1}}</td>
+                <td >
+                    <a href="/manager/scripts/{{item.0}}">
+                    <img src="/static/img/script.png" border="0" 
+                            alt="script_code" width="48" height="48" 
+                            align="center">
+                    </a> 
+                </td>
+            </tr>
+            {% endfor %}  
+            </table>
+        <p>
+    </div>
+    </div>
     <div id="line"></div>
     <div class="clearfix"></div>
+    
 {% endblock %}
 
  
