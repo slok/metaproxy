@@ -639,3 +639,10 @@ font-weight: bold;}
     overflow:auto;
 }
 
+#centeredContent
+{
+    text-align:center;
+    display:block;
+}
+
+
