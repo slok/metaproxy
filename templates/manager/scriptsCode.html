@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load pygmentize_tags %}
+
+{% block head %}
+<link href="/static/css/pygments-black.css" rel="stylesheet" type="text/css"/>
+    <title>Meta Proxy</title>
+{% endblock %}
+
+{%block body %}
+    <div id="managerBack">
+    <div id="helpcontent">
+	<h2>{{id}}'s Script code</h2>
+        <p>
+            <div id="code">
+                <div id="codeBox">
+                    {{strScript|pygmentize:"python"}}
+                </div>
+            </div>
+        </p>
+    </div>
+    </div>
+    <div id="line"></div>
+    <div class="clearfix"></div>
+{% endblock %}
+
+ 
