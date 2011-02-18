@@ -645,4 +645,16 @@ font-weight: bold;}
     display:block;
 }
 
-
+/*Code syntax highlighting, code line numbers*/
+div.highlight {
+ margin: 0px 20px;
+}
+div.highlight ol{
+ margin-left: 30px;
+}
+div.highlight li{
+ color: #CECECE;
+}
+div.highlight li div.line{
+ color: #cecece;
+}

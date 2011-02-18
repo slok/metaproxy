@@ -23,7 +23,7 @@ class PygmentizeNode(Node):
         except:
             lexer = HtmlLexer()
 
-        return highlight(self.nodelist.render(context), lexer, HtmlFormatter())
+        return highlight(self.nodelist.render(context), lexer, pygmentizer.ListHtmlFormatter(encoding='utf-8'))
 
 def pygmentize(parser, token):
     nodelist = parser.parse(('endpygmentize',))
@@ -45,7 +45,7 @@ def pygmentize(text,language):
         lexer = get_lexer_by_name(language, encoding='UTF-8')
     except:
         lexer = HtmlLexer()
-    return mark_safe(highlight(text, lexer, HtmlFormatter()))
+    return mark_safe(highlight(text, lexer, pygmentizer.ListHtmlFormatter(encoding='utf-8')))
 
 @register.filter
 @stringfilter
