@@ -177,14 +177,15 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
     """
     #read tee object (tee to string)
     tmpBody = body.read()
+    
     #if isn't implemented return normal page
     try:
         mb = mBImport.ModifyBody()
         body = mb.body_modification_logic(tmpBody)
     except:
         body = tmpBody
+        
 #-----------------------------------------------------------------------
- 
     response = HttpResponse(body, status=resp.status_int)
 
 
