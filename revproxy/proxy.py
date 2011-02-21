@@ -14,10 +14,12 @@ import restkit
 from restkit.globals import set_manager
 from restkit.manager import Manager
 
+
 restkit.set_logging("debug")
 
-from revproxy.util import absolute_uri, header_name, coerce_put_post, \
-rewrite_location, import_conn_manager
+from .util import absolute_uri, header_name, coerce_put_post, \
+rewrite_location, import_conn_manager, absolute_uri
+from .filters import RewriteBase
 
 _conn_manager = None
 def set_conn_manager():
@@ -49,7 +51,7 @@ class HttpResponseBadGateway(HttpResponse):
 
 @csrf_exempt
 def proxy_request(request, destination=None, prefix=None, headers=None,
-        no_redirect=False, decompress=True, **kwargs):
+        no_redirect=False, decompress=False, rewrite_base=False, **kwargs):
     """ generic view to proxy a request.
 
     Args:
@@ -99,7 +101,7 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
     if qs is not None and qs:
         proxied_url = "%s?%s" % (proxied_url, qs)
 
-    # fix headers
+    # fix headers@
     headers = headers or {}
     for key, value in request.META.iteritems():
         if key.startswith('HTTP_'):
@@ -121,21 +123,26 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
     # used in request session store.
     headers["X-Restkit-Reqid"] = uuid.uuid4().hex
 
-    del headers['Accept-Encoding']
+    #del headers['Accept-Encoding']
 
     # django doesn't understand PUT sadly
     method = request.method.upper()
     if method == "PUT":
         coerce_put_post(request)
 
-    # do the request
+    filters = None
+    if rewrite_base:
+        decompress = True
+        filters=[RewriteBase(request)]
 
+    # do the request
 
     try:
         resp = restkit.request(proxied_url, method=method,
                 body=request.raw_post_data, headers=headers,
                 follow_redirect=True,
-                decompress=decompress)
+                decompress=decompress,
+                filters=filters)
     except restkit.RequestFailed, e:
         msg = getattr(e, 'msg', '')
     
@@ -145,11 +152,8 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
         else:
             return http.HttpResponseBadRequest(msg)
 
-    print type(resp._body)
-
-    #with resp.body_stream() as body:
-    body = resp.body_string()
-#-----------------------------------------------------------------------
+    body =  resp.tee()
+    #-----------------------------------------------------------------------
     #get path and split in "/" parts
     actualPath = request.get_full_path()
     parts = []
@@ -165,18 +169,24 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
     
     """
     if "dipina" in actualPath:
-        from scripts.dipina.ModifyBody import *
-        print "importado!!!!!"
+    from scripts.dipina.ModifyBody import *
+    print "importado!!!!!"
     elif "dbujan" in actualPath:
-        from scripts.dbujan.ModifyBody import *
+    from scripts.dbujan.ModifyBody import *
     #...
     """
-    print importString
-    print mBImport
-    mb = mBImport.ModifyBody()
-    body = mb.body_modification_logic(body)
-#-----------------------------------------------------------------------   
+    #read tee object (tee to string)
+    tmpBody = body.read()
+    #if isn't implemented return normal page
+    try:
+        mb = mBImport.ModifyBody()
+        body = mb.body_modification_logic(tmpBody)
+    except:
+        body = tmpBody
+#-----------------------------------------------------------------------
+ 
     response = HttpResponse(body, status=resp.status_int)
+
 
     # fix response headers
     for k, v in resp.headers.items():
@@ -185,8 +195,9 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
             continue
         if kl  == "location":
             response[k] = rewrite_location(request, prefix, v)
-            print v
-            print response[k]
+        elif kl == "content-encoding":
+            if not decompress:
+                response[k] = v
         else:
             response[k] = v
 
