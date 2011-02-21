@@ -153,7 +153,7 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
             return http.HttpResponseBadRequest(msg)
 
     body =  resp.tee()
-    #-----------------------------------------------------------------------
+#-----------------------------------------------------------------------
     #get path and split in "/" parts
     actualPath = request.get_full_path()
     parts = []
@@ -169,10 +169,10 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
     
     """
     if "dipina" in actualPath:
-    from scripts.dipina.ModifyBody import *
-    print "importado!!!!!"
+        from scripts.dipina.ModifyBody import *
+        print "importado!!!!!"
     elif "dbujan" in actualPath:
-    from scripts.dbujan.ModifyBody import *
+        from scripts.dbujan.ModifyBody import *
     #...
     """
     #read tee object (tee to string)
