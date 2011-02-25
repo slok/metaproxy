@@ -20,6 +20,7 @@ restkit.set_logging("debug")
 from .util import absolute_uri, header_name, coerce_put_post, \
 rewrite_location, import_conn_manager, absolute_uri
 from .filters import RewriteBase
+from .store import RequestStore
 
 _conn_manager = None
 def set_conn_manager():
@@ -48,10 +49,9 @@ class HttpResponseBadGateway(HttpResponse):
     status_code = 502
 
 
-
 @csrf_exempt
-def proxy_request(request, destination=None, prefix=None, headers=None,
-        no_redirect=False, decompress=False, rewrite_base=False, **kwargs):
+#def proxy_request(request, **kwargs):
+def proxy_request(request,destination,  **kwargs):
     """ generic view to proxy a request.
 
     Args:
@@ -63,13 +63,60 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
             if no path is given
         decompress: boolean, False by default. If true the proxy will
             decompress the source body if it's gzip encoded.
+        filters: list of revproxy.Filter instance
 
     Return:
 
         HttpResponse instance
     """
 
+    # proxy sid
+    try:
+        cookie_name = settings.REVPROXY_COOKIE
+    except AttributeError:
+        cookie_name = kwargs.get("cookie", "PROXY_SID")
+
+    sid = request.COOKIES.get(cookie_name)
+
+    # create a proxy session id only if it's needed so someone using
+    # a cookie based authentification can just reuse this session id.
+    # It can also be the session id from the session middleware.
+    if not sid:
+        sid = uuid.uuid4().hex
+    kwargs['proxy_sid'] = sid
+
+    
+    # install request filters
+    filters_classes = kwargs.get('filters')
+    if not filters_classes:
+        filters = None 
+    else:
+        filters = []
+        for fclass in filters_classes:
+            # add filter instance
+            fobj = fclass(request, **kwargs)
+            filters.append(fobj)
+
+            # eventually rewrite request and kwargs
+            if hasattr(fobj, 'setup'):
+                ret = fobj.setup()
+                if ret is not None:
+                    try:
+                        request, extra_kwargs = ret
+                    except ValueError:
+                        extra_kwargs = ret
+
+                    if extra_kwargs is not None:
+                        kwargs.update(extra_kwargs)
+    
+
+    destination #= kwargs.get('destination')
+    prefix = kwargs.get('prefix')
+    headers = kwargs.get('headers')
+    no_redirect = kwargs.get('no_redirect', False)
+    decompress = kwargs.get("decompress", False)
     path = kwargs.get("path")
+    proxy_sid = kwargs.get('proxy_sid')
 
     if path is None:
         path = request.path
@@ -120,23 +167,12 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
     # we forward for
     headers["X-Forwarded-For"] = request.get_host()
 
-    # used in request session store.
-    headers["X-Restkit-Reqid"] = uuid.uuid4().hex
-
-    #del headers['Accept-Encoding']
-
     # django doesn't understand PUT sadly
     method = request.method.upper()
     if method == "PUT":
         coerce_put_post(request)
-
-    filters = None
-    if rewrite_base:
-        decompress = True
-        filters=[RewriteBase(request)]
-
+       
     # do the request
-
     try:
         resp = restkit.request(proxied_url, method=method,
                 body=request.raw_post_data, headers=headers,
@@ -153,7 +189,7 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
             return http.HttpResponseBadRequest(msg)
 
     body =  resp.tee()
-#-----------------------------------------------------------------------
+    #-----------------------------------------------------------------------
     #get path and split in "/" parts
     actualPath = request.get_full_path()
     parts = []
@@ -201,6 +237,16 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
                 response[k] = v
         else:
             response[k] = v
+    
+    # save the session 
+    response.set_cookie(
+            cookie_name, 
+            sid,
+            max_age=None,
+            expires=None,
+            domain=settings.SESSION_COOKIE_DOMAIN,
+            path=settings.SESSION_COOKIE_PATH,
+            secure=True)
 
     return response
 

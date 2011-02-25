@@ -99,6 +99,7 @@ TEMPLATE_DIRS = (
 #REVPROXY_CONN_MGR = "restkit.conn.gevent_manager:GeventConnectionManager"
 
 REVPROXY_SETTINGS = [
+    ("dipina2", "http://paginaspersonales.deusto.es/dipina/"),
 	("dipina", "http://paginaspersonales.deusto.es/dipina/"),
 	("dbujan", "http://paginaspersonales.deusto.es/dbujan/"),
 	("slok", "http://slok.homelinux.com")
