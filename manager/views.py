@@ -171,7 +171,7 @@ def manager_addweb_page(request):
             u = form.cleaned_data['url']
             
             #add url to the settings set the flag to good insertion and create dir
-            insert_delete_web_in_settings(n, n, True)
+            insert_delete_web_in_settings(u, n, True)
             insert=True
             newFolderPath = 'scripts/'+n+'/'
             create_dir(newFolderPath)
