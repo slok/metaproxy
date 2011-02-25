@@ -13,7 +13,7 @@ from django.http import HttpResponse, Http404, HttpResponsePermanentRedirect
 import restkit
 from restkit.globals import set_manager
 from restkit.manager import Manager
-
+from utils.utils import *
 
 restkit.set_logging("debug")
 
@@ -153,44 +153,49 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
             return http.HttpResponseBadRequest(msg)
 
     body =  resp.tee()
+    headers = resp.headers.items()
+    i = find_in_list(headers, 'Content-Type')
 #-----------------------------------------------------------------------
-    #get path and split in "/" parts
-    actualPath = request.get_full_path()
-    parts = []
-    for part in actualPath.split('/'):
-        parts.append(part)
-    #create the import string. Ex: scripts.dipina.ModifyBody
-    importString = "scripts."
-    importString += parts[2] #The 3rd position is where the id is
-    importString += ".ModifyBody"
-    
-    #import in a local var
-    mBImport = __import__(importString, fromlist=['*'])
-    
-    """
-    if "dipina" in actualPath:
-        from scripts.dipina.ModifyBody import *
-        print "importado!!!!!"
-    elif "dbujan" in actualPath:
-        from scripts.dbujan.ModifyBody import *
-    #...
-    """
-    #read tee object (tee to string)
-    tmpBody = body.read()
-    
-    #if isn't implemented return normal page
-    try:
-        mb = mBImport.ModifyBody()
-        body = mb.body_modification_logic(tmpBody)
-    except:
-        body = tmpBody
+    #if the type of the "packet" isn't text and html, we don't want to
+    # edit the bytes, because we will destroy the images, css...
+    if headers[i][1] == 'text/html':
+        #get path and split in "/" parts
+        actualPath = request.get_full_path()
+        parts = []
+        for part in actualPath.split('/'):
+            parts.append(part)
+        #create the import string. Ex: scripts.dipina.ModifyBody
+        importString = "scripts."
+        importString += parts[2] #The 3rd position is where the id is
+        importString += ".ModifyBody"
+        
+        #import in a local var
+        mBImport = __import__(importString, fromlist=['*'])
+        
+        """
+        if "dipina" in actualPath:
+            from scripts.dipina.ModifyBody import *
+            print "importado!!!!!"
+        elif "dbujan" in actualPath:
+            from scripts.dbujan.ModifyBody import *
+        #...
+        """
+        #read tee object (tee to string)
+        tmpBody = body.read()
+
+        #if isn't implemented return normal page
+        try:
+            mb = mBImport.ModifyBody()
+            body = mb.body_modification_logic(tmpBody)
+        except:
+            body = tmpBody
         
 #-----------------------------------------------------------------------
+
     response = HttpResponse(body, status=resp.status_int)
 
-
     # fix response headers
-    for k, v in resp.headers.items():
+    for k, v in headers:
         kl = k.lower()
         if is_hop_by_hop(kl):
             continue
@@ -201,7 +206,7 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
                 response[k] = v
         else:
             response[k] = v
-
+    
     return response
 
 

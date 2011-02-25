@@ -239,3 +239,10 @@ def sparql_query(query, user, password, db, output):
 
     return qres
 #####################################################################################
+def find_in_list(list, key):
+    i = 0
+    for k, v in list:
+        i += 1
+        if k == key:
+            break
+    return i-1
