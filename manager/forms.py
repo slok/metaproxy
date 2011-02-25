@@ -31,3 +31,7 @@ class UploadScriptForm(forms.Form):
     file  = forms.FileField(label='Script to upload', required=False)
     #Select the database
     dataBases = forms.ChoiceField(label='Database to store the script', widget = forms.Select(), choices= settings.REVPROXY_SETTINGS)
+
+class addWebForm(forms.Form):
+    name = forms.CharField(label='Web Name',required=True)
+    url = forms.URLField(label='Web URI', required=True)
