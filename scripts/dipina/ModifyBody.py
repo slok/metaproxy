@@ -27,6 +27,11 @@ class ModifyBody(ModifyBodyBase):
                             $("#tabs").tabs();
                         });
                     </script>
+                    
+                    <link href="/static/css/shCore.css" rel="stylesheet" type="text/css" />
+                    <link href="/static/css/shThemeRDark.css" rel="stylesheet" type="text/css" />
+                    <script type="text/javascript" src="/static/js/shCore.js"></script>
+                    <script type="text/javascript" src="/static/js/shBrushXml.js"></script>
                    """
         bodyAux = body[:posHead] + jQScript + body[(posHead):]
         
@@ -47,7 +52,19 @@ class ModifyBody(ModifyBodyBase):
                         <div id="fragment-1">"""
         midHTML= """
                     </div>
-                        <div id="fragment-2">"""
+                        <div id="fragment-2">
+                        
+                        <pre class="brush: xhtml">
+                        """
+                        
+        syntaxHigh=     """
+                        
+                        </pre>
+                        
+                        <script type="text/javascript">SyntaxHighlighter.all()</script>
+                        
+                        """
+                        
         finHTML="""                   
                         </div>
                     </div>
@@ -57,4 +74,4 @@ class ModifyBody(ModifyBodyBase):
         
         tempFile = urllib2.urlopen('http://paginaspersonales.deusto.es/dipina/resources/diego.rdf')
 
-        return initHTML + posBody + midHTML + tempFile.read()  + finHTML
+        return initHTML + posBody + midHTML + tempFile.read() + syntaxHigh + finHTML
