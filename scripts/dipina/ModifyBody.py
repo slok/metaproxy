@@ -56,5 +56,5 @@ class ModifyBody(ModifyBodyBase):
                  """
         
         tempFile = urllib2.urlopen('http://paginaspersonales.deusto.es/dipina/resources/diego.rdf')
-
-        return initHTML + posBody + midHTML + tempFile.read()  + finHTML
+        
+        return initHTML + posBody + midHTML + x  + finHTML

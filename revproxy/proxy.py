@@ -14,6 +14,7 @@ import restkit
 from restkit.globals import set_manager
 from restkit.manager import Manager
 from utils.utils import *
+import sys
 
 restkit.set_logging("debug")
 
@@ -155,7 +156,7 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
     body =  resp.tee()
     headers = resp.headers.items()
     i = find_in_list(headers, 'Content-Type')
-    debug_print(headers)
+
 #-----------------------------------------------------------------------
     #if the type of the "package" isn't text and html, we don't want to
     # edit the bytes, because we will destroy the images, css...
@@ -183,15 +184,18 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
         """
         #read tee object (tee to string)
         tmpBody = body.read()
-
+       
         #if isn't implemented return normal page
         try:
             mb = mBImport.ModifyBody()
             body = mb.body_modification_logic(tmpBody)
-            # We have changed the body so we have to change the length of the new package
+            #Obtain the index of the content. Now we know where to change
             i = find_in_list(headers, 'Content-Length') 
-            #TODO: Calculate the length of the package
-            length = 99999
+            #Calculate the length (needs >= Python 2.6)
+            length = sys.getsizeof(body)
+            #An empty string type variable in python is 40, so we rest to obtain the content length
+            length = length - 40
+            #Is a tuple, so is inmatuable, so we have to create a new one
             tupla = ('Content-Length', length)
             headers[i] = tupla
 
