@@ -155,8 +155,9 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
     body =  resp.tee()
     headers = resp.headers.items()
     i = find_in_list(headers, 'Content-Type')
+    debug_print(headers)
 #-----------------------------------------------------------------------
-    #if the type of the "packet" isn't text and html, we don't want to
+    #if the type of the "package" isn't text and html, we don't want to
     # edit the bytes, because we will destroy the images, css...
     if headers[i][1] == 'text/html':
         #get path and split in "/" parts
@@ -187,6 +188,13 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
         try:
             mb = mBImport.ModifyBody()
             body = mb.body_modification_logic(tmpBody)
+            # We have changed the body so we have to change the length of the new package
+            i = find_in_list(headers, 'Content-Length') 
+            #TODO: Calculate the length of the package
+            length = 99999
+            tupla = ('Content-Length', length)
+            headers[i] = tupla
+
         except:
             body = tmpBody
         
