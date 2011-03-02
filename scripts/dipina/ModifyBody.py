@@ -2,6 +2,9 @@ import abc
 import urllib2
 from utils.utils import debug_print
 from scripts.ModifyBodyBase import ModifyBodyBase
+from BeautifulSoup import BeautifulSoup, SoupStrainer
+from django.conf import settings
+
 
 class ModifyBody(ModifyBodyBase):
     
@@ -53,17 +56,7 @@ class ModifyBody(ModifyBodyBase):
         midHTML= """
                     </div>
                         <div id="fragment-2">
-                        
-                        <pre class="brush: xhtml">
-                        """
-                        
-        syntaxHigh=     """
-                        
-                        </pre>
-                        
-                        <script type="text/javascript">SyntaxHighlighter.all()</script>
-                        
-                        """
+                 """       
                         
         finHTML="""                   
                         </div>
@@ -71,7 +64,34 @@ class ModifyBody(ModifyBodyBase):
                 </body>
             </html>
                  """
-        
-        tempFile = urllib2.urlopen('http://paginaspersonales.deusto.es/dipina/resources/diego.rdf')
+        syntaxHigh='<script type="text/javascript">SyntaxHighlighter.all()</script>'
+        links = self.getAllRdfLinks(body)
+        rdfs = self.addRDFsCodeInHTML(links)
+        return initHTML + posBody + midHTML + rdfs + syntaxHigh + finHTML
 
-        return initHTML + posBody + midHTML + tempFile.read() + syntaxHigh + finHTML
+    def addRDFsCodeInHTML(self, linkList):
+        finalHtml=''
+        preStart = '<pre class="brush: xhtml">'
+        preEnd = '</pre>'
+        for i in linkList:
+            tempFile = urllib2.urlopen(i)
+            finalHtml = finalHtml + '-------------------' +preStart +  tempFile.read()  +preEnd 
+        
+        
+        return finalHtml
+
+    def getAllRdfLinks(self, body):
+        links = []
+        linkList = []
+        #get all links
+        for link in BeautifulSoup(body, parseOnlyThese=SoupStrainer('a')):
+            #get only links and .rdf ones [[[[[[[[[[[[[(POC .vcf too)]]]]]]]]]]]]]]]] delete .vcf
+            if link.has_key('href') and ('.rdf' in link['href'] or '.vcf' in link['href']):
+                links.append(link['href'])
+        
+        #add prefix to the url
+        for i in links:
+            debug_print(settings.REVPROXY_SETTINGS[0][1])
+            linkList.append(settings.REVPROXY_SETTINGS[0][1] + i)
+        
+        return linkList
