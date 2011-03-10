@@ -2,8 +2,12 @@ import abc
 import urllib2
 from utils.utils import debug_print
 from scripts.ModifyBodyBase import ModifyBodyBase
-from BeautifulSoup import BeautifulSoup, SoupStrainer
 from django.conf import settings
+from BeautifulSoup import BeautifulSoup          # For processing HTML
+from BeautifulSoup import BeautifulStoneSoup     # For processing XML
+from BeautifulSoup import SoupStrainer
+from BeautifulSoup import Tag
+from BeautifulSoup import NavigableString
 
 
 class ModifyBody(ModifyBodyBase):
@@ -51,25 +55,36 @@ class ModifyBody(ModifyBodyBase):
                         <ul>
                             <li><a href="#fragment-1"><span>WebPage</span></a></li>
                             <li><a href="#fragment-2"><span>XML FOAF</span></a></li>
+                            <li><a href="#fragment-3"><span>GRDDL Parsing</span></a></li>
+                            <li><a href="#fragment-4"><span>Web Scrapping(Awards)</span></a></li>
                         </ul>
                         <div id="fragment-1">"""
-        midHTML= """
-                    </div>
-                        <div id="fragment-2">
-                 """       
-                        
-        finHTML="""                   
+        frag2= """
                         </div>
+                        <div id="fragment-2">
+                    """       
+                        
+        frag3="""                   
+                        </div>
+                        <div id="fragment-3">
+                    """
+        frag4="""
+                        </div>
+                        <div id="fragment-4">
+                    """
+        finHTML="""
                     </div>
                 </body>
             </html>
                  """
         syntaxHigh='<script type="text/javascript">SyntaxHighlighter.all()</script>'
         links = self.getAllRdfLinks(body)
-        rdfs = self.addRDFsCodeInHTML(links)
-        return initHTML + posBody + midHTML + rdfs + syntaxHigh + finHTML
+        rdfs = self.addRDFsCodeInHTMLLinks(links)
+        awardXML = self.createAwardXML(body)
+        awardXML = self.addRDFsCodeInHTMLStr(awardXML)
+        return initHTML + posBody + frag2 + rdfs + frag3 + 'VOID'+ frag4+ awardXML +syntaxHigh + finHTML
 
-    def addRDFsCodeInHTML(self, linkList):
+    def addRDFsCodeInHTMLLinks(self, linkList):
         finalHtml=''
         preStart = '<pre class="brush: xhtml">'
         preEnd = '</pre>'
@@ -79,7 +94,13 @@ class ModifyBody(ModifyBodyBase):
         
         
         return finalHtml
-
+    
+    def addRDFsCodeInHTMLStr(self, xml):
+        
+        finalHtml = '<pre class="brush: xhtml">\n' + xml + '\n</pre>'
+    
+        return finalHtml
+    
     def getAllRdfLinks(self, body):
         links = []
         linkList = []
@@ -95,3 +116,60 @@ class ModifyBody(ModifyBodyBase):
             linkList.append(settings.REVPROXY_SETTINGS[0][1] + i)
         
         return linkList
+    
+    def createAwardXML(self, body):
+        #get all the blocks of wards
+        htmlSoup = BeautifulSoup(body, parseOnlyThese=SoupStrainer('dd'))
+        #get all the titles of the awrads
+        htmlTitles = BeautifulSoup(body, parseOnlyThese=SoupStrainer('dt'))
+        awardCont = 0
+        
+        #create RDF and properties
+        xmlSoup = BeautifulStoneSoup()
+        rdfRDF = Tag(xmlSoup, 'rdf:RDF',[('xmlns:rdf','http://www.w3.org/1999/02/22-rdf-syntax-ns#')
+                                    ,('xmlns:dc', 'http://purl.org/dc/elements/1.1/') ])
+        
+        #add to the xml first property
+        xmlSoup.append(rdfRDF)
+        for award in htmlSoup: #get "dd" blocks (each is an award)
+            
+            dcDate = Tag(xmlSoup, 'dc:date')
+            dcContrib =  Tag(xmlSoup, 'dc:contributor')
+            dcCreator =  Tag(xmlSoup, 'dc:creator')
+            dcRelation =  Tag(xmlSoup, 'dc:relation')
+            
+            #add titles to rdf description
+            rdfDesc = Tag(xmlSoup, 'rdf:Description', [('dc:title', htmlTitles.contents[awardCont].contents[0])])
+            rdfRDF.append(rdfDesc)
+            #increment the titles counter
+            awardCont = awardCont + 1
+            
+            for awardProp in award.contents: #get each div block (content of dd)
+                try:
+                    for props in awardProp.contents: #get each property
+                        try:
+                            print props.contents[0].contents[0]
+                            if len(props.contents) == 2:
+                                if props.contents[0].contents[0] == 'Date' or  props.contents[0].contents[0] == 'date':
+                                    rdfDesc.append(dcDate)
+                                    dcDate.insert(0, NavigableString(props.contents[1]))
+                                elif props.contents[0].contents[0] == 'Entity' or  props.contents[0].contents[0] == 'entity': #error in Alava enprender link
+                                     rdfDesc.append(dcContrib)
+                                     dcContrib.insert(0, NavigableString(props.contents[1]))
+                                elif props.contents[0].contents[0] == 'Author' or  props.contents[0].contents[0] == 'author' or \
+                                    props.contents[0].contents[0] == 'Authors' or  props.contents[0].contents[0] == 'authors': 
+                                     rdfDesc.append(dcCreator)
+                                     dcCreator.insert(0, NavigableString(props.contents[1]))
+                                elif props.contents[0].contents[0] == 'Role' or  props.contents[0].contents[0] == 'role': 
+                                     rdfDesc.append(dcRelation)
+                                     dcRelation.insert(0, NavigableString(props.contents[1])) 
+                                """if props.contents[0].contents[0] == 'Title' or props.contents[0].contents[0] == 'title':
+                                    rdfDesc = Tag(xmlSoup, 'rdf:Description', [('dc:title', props.contents[1])])
+                                    rdfRDF.append(rdfDesc)
+                                else:"""
+                        except:
+                            pass
+                except:
+                    pass
+
+        return xmlSoup.prettify()
