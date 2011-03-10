@@ -28,6 +28,7 @@ class ModifyBody(ModifyBodyBase):
                     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
                     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
                     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+                    <link href="/static/css/proxiedWeb.css" rel="stylesheet" type="text/css" />
                     
                     <script>
                         $(document).ready(function() {
@@ -86,8 +87,16 @@ class ModifyBody(ModifyBodyBase):
 
     def addRDFsCodeInHTMLLinks(self, linkList):
         finalHtml=''
-        preStart = '<pre class="brush: xhtml">'
-        preEnd = '</pre>'
+        preStart = """
+                    <div id = "code">
+                        <div id="codeBox">
+                            <pre class="brush: xhtml">\n
+                   """
+        preEnd = """
+                            \n</pre>
+                        </div>
+                    </div>
+                 """
         for i in linkList:
             tempFile = urllib2.urlopen(i)
             finalHtml = finalHtml + '-------------------' +preStart +  tempFile.read()  +preEnd 
@@ -97,7 +106,17 @@ class ModifyBody(ModifyBodyBase):
     
     def addRDFsCodeInHTMLStr(self, xml):
         
-        finalHtml = '<pre class="brush: xhtml">\n' + xml + '\n</pre>'
+        ini = """
+                <div id = "code">
+                    <div id="codeBox">
+                        <pre class="brush: xhtml">\n
+              """
+        fin = """
+                        \n</pre>
+                    </div>
+                </div>
+              """
+        finalHtml = ini + xml + fin
     
         return finalHtml
     
