@@ -14,6 +14,9 @@ class ModifyBody(ModifyBodyBase):
     
     def body_modification_logic(self, body):
         
+        #we will work with utf8
+        body = unicode(body, "utf-8", errors='replace')
+        
         head = self.get_Head_and_insert_js(body)
         bodyHtml = self.get_body_html(body)
                  
@@ -45,19 +48,41 @@ class ModifyBody(ModifyBodyBase):
         
         head =  bodyAux[bodyAux.find("<head>"): bodyAux.find("</head>") + 7]
         
+        #convert result to unicode(if they are unicode already exception will be catch and wouldn't be done nothing)
+        try:
+            head = unicode(head, "utf-8", errors='replace')
+        except:
+            pass
+        
         return head
     
     def get_body_html(self, body):
         posBody = body[(body.find("<body>") + 6): body.find("</body>")]
+        #get data
+        syntaxHigh='<script type="text/javascript">SyntaxHighlighter.all()</script>'
+        links = self.getAllRdfLinks(body)
+        rdfs = self.addRDFsCodeInHTMLLinks(links)
+        awardXML = self.createAwardXML(body)
+        awardXML = self.addRDFsCodeInHTMLStr(awardXML)
+        
+        tabs = '<li><a href="#fragment-web"><span>WebPage</span></a></li>'
+        
+        for i in links:
+            
+            #split the url to get the final name
+            tmp = i.split('/')
+            name = tmp[len(tmp)-1]
+            name = name.split('.')
+            finalName = name[0]
+            finalNamePar = finalName + '(RDF-XML)'
+            tabs = tabs + '\n<li><a href=\"#fragment-'+ finalName +'\"><span>' + finalNamePar + '</span></a></li>'
+            #tabs =  '<li><a href="#fragment-scrapp"><span>Web Scrapping(Awards)</span></a></li>'
         
         initHTML= """
                   <body>
                     <div id="tabs">
-                        <ul>
-                            <li><a href="#fragment-1"><span>WebPage</span></a></li>
-                            <li><a href="#fragment-2"><span>XML FOAF</span></a></li>
-                            <li><a href="#fragment-3"><span>GRDDL Parsing</span></a></li>
-                            <li><a href="#fragment-4"><span>Web Scrapping(Awards)</span></a></li>
+                        <ul>"""+ tabs +"""\n<li><a href="#fragment-grddl"><span>GRDDL Parsing</span></a></li>
+                            <li><a href="#fragment-scrapp"><span>Web Scrapping(Awards)</span></a></li>
                         </ul>
                         <div id="fragment-1">"""
         frag2= """
@@ -78,12 +103,17 @@ class ModifyBody(ModifyBodyBase):
                 </body>
             </html>
                  """
-        syntaxHigh='<script type="text/javascript">SyntaxHighlighter.all()</script>'
-        links = self.getAllRdfLinks(body)
-        rdfs = self.addRDFsCodeInHTMLLinks(links)
-        awardXML = self.createAwardXML(body)
-        awardXML = self.addRDFsCodeInHTMLStr(awardXML)
-        return initHTML + posBody + frag2 + rdfs + frag3 + 'VOID'+ frag4+ awardXML +syntaxHigh + finHTML
+        #return initHTML + posBody + frag2 + rdfs + frag3 + 'VOID'+ frag4+ awardXML +syntaxHigh + finHTML
+        stringsForHTML = [initHTML, posBody, frag2, rdfs, frag3, 'VOID', frag4, awardXML, syntaxHigh, finHTML]
+        final = ''
+        #convert all to unicode(if they are unicode already exception will be catch and wouldn't be done nothing)
+        for string in  stringsForHTML:
+            try:
+                string = unicode(string, "utf-8", errors='replace')
+            except:
+                pass
+            final = final + string
+        return final
 
     def addRDFsCodeInHTMLLinks(self, linkList):
         finalHtml=''
