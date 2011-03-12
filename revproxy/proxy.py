@@ -186,21 +186,21 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
         tmpBody = body.read()
        
         #if isn't implemented return normal page
-        try:
-            mb = mBImport.ModifyBody()
-            body = mb.body_modification_logic(tmpBody)
-            #Obtain the index of the content. Now we know where to change
-            i = find_in_list(headers, 'Content-Length') 
-            #Calculate the length (needs >= Python 2.6)
-            length = sys.getsizeof(body)
-            #An empty string type variable in python is 40, so we rest to obtain the content length
-            length = length - 40
-            #Is a tuple, so is inmatuable, so we have to create a new one
-            tupla = ('Content-Length', length)
-            headers[i] = tupla
+        #try:
+        mb = mBImport.ModifyBody()
+        body = mb.body_modification_logic(tmpBody)
+        #Obtain the index of the content. Now we know where to change
+        i = find_in_list(headers, 'Content-Length') 
+        #Calculate the length (needs >= Python 2.6)
+        length = sys.getsizeof(body)
+        #An empty string type variable in python is 40, so we rest to obtain the content length
+        length = length - 40
+        #Is a tuple, so is inmatuable, so we have to create a new one
+        tupla = ('Content-Length', length)
+        headers[i] = tupla
 
-        except:
-            body = tmpBody
+        #except:
+        #    body = tmpBody
         
 #-----------------------------------------------------------------------
 

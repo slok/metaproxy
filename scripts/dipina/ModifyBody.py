@@ -60,43 +60,48 @@ class ModifyBody(ModifyBodyBase):
         posBody = body[(body.find("<body>") + 6): body.find("</body>")]
         #get data
         syntaxHigh='<script type="text/javascript">SyntaxHighlighter.all()</script>'
-        links = self.getAllRdfLinks(body)
-        rdfs = self.addRDFsCodeInHTMLLinks(links)
         awardXML = self.createAwardXML(body)
         awardXML = self.addRDFsCodeInHTMLStr(awardXML)
         
+        #tab necessary data
+        rdfNameAndUrl={}
         tabs = '<li><a href="#fragment-web"><span>WebPage</span></a></li>'
+        links = self.getAllRdfLinks(body)
         
         for i in links:
-            
             #split the url to get the final name
             tmp = i.split('/')
             name = tmp[len(tmp)-1]
             name = name.split('.')
             finalName = name[0]
             finalNamePar = finalName + '(RDF-XML)'
+            #create the HTML code for the tab declaration
             tabs = tabs + '\n<li><a href=\"#fragment-'+ finalName +'\"><span>' + finalNamePar + '</span></a></li>'
-            #tabs =  '<li><a href="#fragment-scrapp"><span>Web Scrapping(Awards)</span></a></li>'
-        
+            #add to the dict
+            rdfNameAndUrl[finalName] = i
+            
+        tabs = tabs + '\n<li><a href=\"#fragment-grddl\"><span>GRDDL Parsing</span></a></li>'
+        tabs = tabs + '\n<li><a href=\"#fragment-scrapp\"><span>Web Scrapping(Awards)</span></a></li>'
+
+        #get all the HTM code fragment from the RDF tabs
+        rdfs = self.addRDFsCodeInHTMLLinks(rdfNameAndUrl)
+
         initHTML= """
                   <body>
                     <div id="tabs">
-                        <ul>"""+ tabs +"""\n<li><a href="#fragment-grddl"><span>GRDDL Parsing</span></a></li>
-                            <li><a href="#fragment-scrapp"><span>Web Scrapping(Awards)</span></a></li>
+                        <ul>"""+ tabs +"""
                         </ul>
-                        <div id="fragment-1">"""
-        frag2= """
+                        <div id="fragment-web">"""
+        fragRDFs= """
                         </div>
-                        <div id="fragment-2">
                     """       
                         
-        frag3="""                   
-                        </div>
-                        <div id="fragment-3">
+        fragGrddl="""
+                        <div id="fragment-grddl">
                     """
-        frag4="""
+        fragScrap="""
                         </div>
-                        <div id="fragment-4">
+                        <div id="fragment-scrapp">
                     """
         finHTML="""
                     </div>
@@ -104,7 +109,7 @@ class ModifyBody(ModifyBodyBase):
             </html>
                  """
         #return initHTML + posBody + frag2 + rdfs + frag3 + 'VOID'+ frag4+ awardXML +syntaxHigh + finHTML
-        stringsForHTML = [initHTML, posBody, frag2, rdfs, frag3, 'VOID', frag4, awardXML, syntaxHigh, finHTML]
+        stringsForHTML = [initHTML, posBody, fragRDFs, rdfs, fragGrddl, 'call to the grddl parser', fragScrap, awardXML, syntaxHigh, finHTML]
         final = ''
         #convert all to unicode(if they are unicode already exception will be catch and wouldn't be done nothing)
         for string in  stringsForHTML:
@@ -115,7 +120,7 @@ class ModifyBody(ModifyBodyBase):
             final = final + string
         return final
 
-    def addRDFsCodeInHTMLLinks(self, linkList):
+    def addRDFsCodeInHTMLLinks(self, linkDict):
         finalHtml=''
         preStart = """
                     <div id = "code">
@@ -127,11 +132,20 @@ class ModifyBody(ModifyBodyBase):
                         </div>
                     </div>
                  """
-        for i in linkList:
-            tempFile = urllib2.urlopen(i)
-            finalHtml = finalHtml + '-------------------' +preStart +  tempFile.read()  +preEnd 
         
+        #create a block of tabs(the content)
+        for key, val in linkDict.iteritems():
+            tempFile = urllib2.urlopen(val).read()
+            try:
+                #if we want to print there is the need to change errors to 'ignore'
+                tempFile = unicode(tempFile, "utf-8", errors='replace')
+            except:
+                pass
+            #add the tab block head and then add all the  
+            tmp = '<div id=\"fragment-'+ key +'\">'
+            finalHtml = finalHtml + tmp + preStart + tempFile + preEnd + '</div>'
         
+        #debug_print(finalHtml)
         return finalHtml
     
     def addRDFsCodeInHTMLStr(self, xml):
