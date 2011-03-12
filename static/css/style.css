@@ -221,8 +221,8 @@ a:hover {
 /* content is king */
 
 #content-bottom {
-	height: 48px;
-	padding-top: 10px;
+	height: 70px;
+	padding-top: 5px;
 	color: #000;
 	font-size: 11px;
 	background: #666 url(../img/content-bottom.png) no-repeat;
@@ -580,13 +580,14 @@ ul span, ol span {
 
 /* Footer */
 
-#footer {
-	float:left;
-	text-align: center;
+#footer { 
+
 }
-#badges {
-	float:left;
+
+#footerText {
+    padding-left: 60px;
 }
+
 #footer a {
 	color: #000;
 }
