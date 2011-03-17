@@ -37,6 +37,22 @@ class ModifyBody(ModifyBodyBase):
                     <script>
                         $(document).ready(function() {
                             $("#tabs").tabs();
+                            $("#viewer").iviewer({
+                               update_on_resize: true,
+                               initCallback: function ()
+                               {
+                                   var object = this;
+                                   object.fit();
+                                   $("#in").click(function(){ object.zoom_by(1);}); 
+                                   $("#out").click(function(){ object.zoom_by(-1);}); 
+                                   $("#fit").click(function(){ object.fit();}); 
+                                   $("#orig").click(function(){  object.set_zoom(100); }); 
+                                   $("#update").click(function(){ object.update_container_info();});
+                               },
+                               onMouseMove: function(object, coords) { },
+                               onStartDrag: function(object, coords) { },
+                               onDrag: function(object, coords) { }
+                            });
                         });
                     </script>
                     
@@ -44,6 +60,11 @@ class ModifyBody(ModifyBodyBase):
                     <link href="/static/css/shThemeRDark.css" rel="stylesheet" type="text/css" />
                     <script type="text/javascript" src="/static/js/shCore.js"></script>
                     <script type="text/javascript" src="/static/js/shBrushXml.js"></script>
+                    
+                    <script type="text/javascript" src="/static/js/jquery.iviewer.js"></script>
+                    <script type="text/javascript" src="/static/js/jquery.mousewheel.min.js"></script>
+                    <link href="/static/css/jquery.iviewer.css" rel="stylesheet" type="text/css" />
+
                    """
         bodyAux = body[:posHead] + jQScript + body[(posHead):]
         
@@ -132,6 +153,25 @@ class ModifyBody(ModifyBodyBase):
                             \n</pre>
                         </div>
                     </div>
+                    
+                    <script>
+                    $(document).ready(function() {
+                    var iviewer = {};
+                    $("#viewer2").iviewer(
+                  {
+                      src: "/static/tmp/foaf.png",
+                      initCallback: function()
+                      {
+                        iviewer = this;
+                      }
+                  });
+                  });
+                  </script>
+                    
+                    <div class="wrapper">
+                        <div id="viewer2" class="viewer" ></div>
+                        <br />
+                    </div>
                  """
         
         
@@ -155,11 +195,11 @@ class ModifyBody(ModifyBodyBase):
             draw_rdf_link_graph('http://paginaspersonales.deusto.es/dipina/resources/diego.rdf', graphDest)
 ####################
             #show graph in html
-            graph = '<a href=\"/static/tmp/'+key+'.png\"\"><img src=\"/static/tmp/'+key+'.png\" alt=\"graph\" width=\"500\" height=\"350\"/></a>'
-
+            #graph = '<a href=\"/static/tmp/'+key+'.png\"\"><img src=\"/static/tmp/'+key+'.png\" alt=\"graph\" width=\"500\" height=\"350\"/></a>'
+                    
             #and last but not least add all the parts to create one (html to rule them 
             #all, one html to find them, one html to bring them all and in the darkness bind them)
-            finalHtml = finalHtml + tmp + graph +preStart + tempFile + preEnd + '</div>'
+            finalHtml = finalHtml + tmp +preStart + tempFile + preEnd + '</div>'
         
         #debug_print(finalHtml)
         return finalHtml
