@@ -14,7 +14,7 @@
 #You should have received a copy of the GNU General Public License
 #along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-
+#import rdflib
 import rdflib
 from rdflib import plugin
 from rdflib.store import Store
@@ -28,7 +28,24 @@ from rdflib.namespace import Namespace
 from rdflib.query import *
 from rdflib import sparql
 from rdflib.query.result import QueryResult
+
+#import Redland
+import RDF
+import Redland
+
+#import url
 import urllib2
+
+# Import graphviz
+import sys
+sys.path.append('/usr/lib64/graphviz/python/')
+import gv
+
+# Import pygraph
+from pygraph.classes.graph import graph
+from pygraph.classes.digraph import digraph
+from pygraph.algorithms.searching import breadth_first_search
+from pygraph.readwrite.dot import write
 
 #####################################################################################
 def download_file(url, destination):
@@ -251,3 +268,47 @@ def debug_print(x):
     print '##################################################################'
     print x
     print '##################################################################'
+#####################################################################################
+def parse_link(link, parserType='rdfxml'):
+    """parses a link and returns stream statements
+        link to the file
+        parser type: rdfxml, ntriples, turtle, trig, guess, rss-tag-soup, rdfa, nquads, grddl
+    """
+    parser = RDF.Parser(name=parserType)
+    return parser.parse_as_stream(link)
+####################################################################################
+def parse_string(rdfStr, uri, parserType='rdfxml'):
+    """parses a string and returns stream statements
+        rdfStr: rdf string
+        parser type: rdfxml, ntriples, turtle, trig, guess, rss-tag-soup, rdfa, nquads, grddl
+    """
+    parser = RDF.Parser(name=parserType)
+    return parser.parse_string_as_stream(rdfStr, uri)
+######################################################################################
+def serialize_stream(stream, serializerType='rdfxml'):
+    """changes the format(serialize) from stream object(Redland) to a format
+        returns a string
+        link to the file
+        serializer type: rdfxml, rdfxml-abbrev, turtle, ntriples, rss-1.0, dot, html, json, atom, nquads
+    """
+    ser = RDF.Serializer(name=serializerType)
+    return ser.serialize_stream_to_string(stream)
+#######################################################################################
+def draw_rdf_str_graph(rdfString, uri, storePath):
+    stre = parse_string(rdfString, uri)
+    dotSer = serialize_stream(stre, 'dot')
+
+    gvv = gv.readstring(dotSer)
+    gv.layout(gvv,'dot')
+    gv.render(gvv,'png',storePath)
+#######################################################################################
+def draw_rdf_link_graph(rdfLink, storePath):
+    stre = parse_link(rdfLink)
+    dotSer = serialize_stream(stre, 'dot')
+
+    gvv = gv.readstring(dotSer)
+    gv.layout(gvv,'dot')
+    gv.render(gvv,'png',storePath)
+
+
+

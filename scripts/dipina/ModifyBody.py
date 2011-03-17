@@ -1,6 +1,7 @@
 import abc
 import urllib2
 from utils.utils import debug_print
+from utils.utils import draw_rdf_link_graph
 from scripts.ModifyBodyBase import ModifyBodyBase
 from django.conf import settings
 from BeautifulSoup import BeautifulSoup          # For processing HTML
@@ -133,6 +134,7 @@ class ModifyBody(ModifyBodyBase):
                     </div>
                  """
         
+        
         #create a block of tabs(the content)
         for key, val in linkDict.iteritems():
             tempFile = urllib2.urlopen(val).read()
@@ -141,9 +143,23 @@ class ModifyBody(ModifyBodyBase):
                 tempFile = unicode(tempFile, "utf-8", errors='replace')
             except:
                 pass
-            #add the tab block head and then add all the  
+            #add the tab block head 
             tmp = '<div id=\"fragment-'+ key +'\">'
-            finalHtml = finalHtml + tmp + preStart + tempFile + preEnd + '</div>'
+            #create and save the graph (is in the for, because is one grafh for each RDF/XML)
+            
+            #draw_rdf_link_graph(val, key+'.png')
+####################change is a PoC
+            
+            graphDest = 'static/tmp/'+str(key)+'.png'
+            
+            draw_rdf_link_graph('http://paginaspersonales.deusto.es/dipina/resources/diego.rdf', graphDest)
+####################
+            #show graph in html
+            graph = '<a href=\"/static/tmp/'+key+'.png\"\"><img src=\"/static/tmp/'+key+'.png\" alt=\"graph\" width=\"500\" height=\"350\"/></a>'
+
+            #and last but not least add all the parts to create one (html to rule them 
+            #all, one html to find them, one html to bring them all and in the darkness bind them)
+            finalHtml = finalHtml + tmp + graph +preStart + tempFile + preEnd + '</div>'
         
         #debug_print(finalHtml)
         return finalHtml
@@ -170,7 +186,8 @@ class ModifyBody(ModifyBodyBase):
         #get all links
         for link in BeautifulSoup(body, parseOnlyThese=SoupStrainer('a')):
             #get only links and .rdf ones [[[[[[[[[[[[[(POC .vcf too)]]]]]]]]]]]]]]]] delete .vcf
-            if link.has_key('href') and ('.rdf' in link['href'] or '.vcf' in link['href']):
+            #if link.has_key('href') and ('.rdf' in link['href'] or '.vcf' in link['href']):
+            if link.has_key('href') and '.rdf' in link['href']:
                 links.append(link['href'])
         
         #add prefix to the url
