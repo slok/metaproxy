@@ -149,6 +149,8 @@ class ModifyBody(ModifyBodyBase):
                         <div id="codeBox">
                             <pre class="brush: xhtml">\n
                    """
+        #We need to include the iviewer script in the HTML code of the 
+        #page in order to visualize the RDF graph 
         preEnd = """
                             \n</pre>
                         </div>
@@ -157,22 +159,9 @@ class ModifyBody(ModifyBodyBase):
                     <script>
                     $(document).ready(function() {
                     var iviewer = {};
-                    $("#viewer2").iviewer(
+                    $("#graphViewer").iviewer(
                   {
-                      src: "/static/tmp/foaf.png",
-                      initCallback: function()
-                      {
-                        iviewer = this;
-                      }
-                  });
-                  });
-                  </script>
-                    
-                    <div class="wrapper">
-                        <div id="viewer2" class="viewer" ></div>
-                        <br />
-                    </div>
-                 """
+                """
         
         
         #create a block of tabs(the content)
@@ -185,21 +174,44 @@ class ModifyBody(ModifyBodyBase):
                 pass
             #add the tab block head 
             tmp = '<div id=\"fragment-'+ key +'\">'
-            #create and save the graph (is in the for, because is one grafh for each RDF/XML)
-            
-            #draw_rdf_link_graph(val, key+'.png')
-####################change is a PoC
-            
+            #create and save the graph (is in the for, because is one grafh for each RDF/XML)        
             graphDest = 'static/tmp/'+str(key)+'.png'
+            
+####################change is a PoC  
+            #Instead of using a direct url to the RDF file to be converted into an image
+            #we should use the draw_rdf_link_graph method that uses the variable 'val'
+            #(the one that is commented below this line)
+            
+            #draw_rdf_link_graph(val, graphDest)
             
             draw_rdf_link_graph('http://paginaspersonales.deusto.es/dipina/resources/diego.rdf', graphDest)
 ####################
+
             #show graph in html
             #graph = '<a href=\"/static/tmp/'+key+'.png\"\"><img src=\"/static/tmp/'+key+'.png\" alt=\"graph\" width=\"500\" height=\"350\"/></a>'
+            
+            #We retrieve the dir of the src image 
+            imgSource=' src: "/'+graphDest+'",'
+            
+            preEnd2= """
+                      initCallback: function()
+                      {
+                        iviewer = this;
+                      }
+                    });
+                    });
+                    </script>
                     
+                    <div class="wrapper">
+                        <div id="graphViewer" class="viewer" ></div>
+                        <br />
+                    </div>
+                 """
+            
+            
             #and last but not least add all the parts to create one (html to rule them 
             #all, one html to find them, one html to bring them all and in the darkness bind them)
-            finalHtml = finalHtml + tmp +preStart + tempFile + preEnd + '</div>'
+            finalHtml = finalHtml + tmp +preStart + tempFile + preEnd + imgSource + preEnd2 +'</div>'
         
         #debug_print(finalHtml)
         return finalHtml
