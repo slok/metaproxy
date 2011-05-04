@@ -155,11 +155,11 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
 
     body =  resp.tee()
     headers = resp.headers.items()
-    i = find_in_list(headers, 'Content-Type')
 
 #-----------------------------------------------------------------------
     #if the type of the "package" isn't text and html, we don't want to
     # edit the bytes, because we will destroy the images, css...
+    i = find_in_list(headers, 'Content-Type')
     if headers[i][1] == 'text/html':
         #get path and split in "/" parts
         actualPath = request.get_full_path()
@@ -186,9 +186,13 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
         tmpBody = body.read()
        
         #if isn't implemented return normal page
-        #try:
-        mb = mBImport.ModifyBody()
-        body = mb.body_modification_logic(tmpBody)
+        #try: #uncomment try for development
+        
+        #create instance of implementation class of ModifyBodyBase
+        mb = mBImport.ModifyBody(tmpBody, headers[find_in_list(headers, 'Content-Location')][1])
+        mb.body_modification_logic()
+        
+        body = mb.body
         #Obtain the index of the content. Now we know where to change
         i = find_in_list(headers, 'Content-Length') 
         #Calculate the length (needs >= Python 2.6)
@@ -201,7 +205,6 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
 
         #except:
             #body = tmpBody
-        
 #-----------------------------------------------------------------------
 
     response = HttpResponse(body, status=resp.status_int)

@@ -13,18 +13,41 @@ from BeautifulSoup import NavigableString
 
 class ModifyBody(ModifyBodyBase):
     
-    def body_modification_logic(self, body):
+    def __init__(self, body, location):
+        self.body = body
+        self.location = location
+    
+    @property
+    def body(self):
+        return self._body
+    
+    @body.setter
+    def body(self, newBody):
+        self._body = newBody
+    
+    @property
+    def location(self):
+        return self._location
+    
+    @location.setter
+    def location(self, newLocation):
+        self._location = newLocation
+    
+    def body_modification_logic(self):
+        
+        debug_print(self.location)
         
         #we will work with utf8
-        body = unicode(body, "utf-8", errors='replace')
+        self.body = unicode(self.body, "utf-8", errors='replace')
         
-        head = self.get_Head_and_insert_js(body)
-        bodyHtml = self.get_body_html(body)
+        head = self.get_Head_and_insert_js()
+        bodyHtml = self.get_body_html()
                  
-        body = head + bodyHtml
-        return body
+        self.body = head + bodyHtml
 
-    def get_Head_and_insert_js(self, body):
+    def get_Head_and_insert_js(self):
+        
+        body = self.body
         print "####[getting head]####"
         #Insert the scripts for the tabs in head 
         posHead = body.find("</head>") - 1
@@ -78,17 +101,19 @@ class ModifyBody(ModifyBodyBase):
         
         return head
     
-    def get_body_html(self, body):
+    def get_body_html(self):
+        body = self.body
+        
         posBody = body[(body.find("<body>") + 6): body.find("</body>")]
         #get data
         syntaxHigh='<script type="text/javascript">SyntaxHighlighter.all()</script>'
-        awardXML = self.createAwardXML(body)
+        awardXML = self.createAwardXML()
         awardXML = self.addRDFsCodeInHTMLStr(awardXML)
         
         #tab necessary data
         rdfNameAndUrl={}
         tabs = '<li><a href="#fragment-web"><span>WebPage</span></a></li>'
-        links = self.getAllRdfLinks(body)
+        links = self.getAllRdfLinks()
         
         for i in links:
             #split the url to get the final name
@@ -232,7 +257,8 @@ class ModifyBody(ModifyBodyBase):
     
         return finalHtml
     
-    def getAllRdfLinks(self, body):
+    def getAllRdfLinks(self):
+        body = self.body
         links = []
         linkList = []
         #get all links
@@ -244,12 +270,13 @@ class ModifyBody(ModifyBodyBase):
         
         #add prefix to the url
         for i in links:
-            debug_print(settings.REVPROXY_SETTINGS[0][1])
+            #debug_print(settings.REVPROXY_SETTINGS[0][1])
             linkList.append(settings.REVPROXY_SETTINGS[0][1] + i)
         
         return linkList
     
-    def createAwardXML(self, body):
+    def createAwardXML(self):
+        body = self.body
         #get all the blocks of wards
         htmlSoup = BeautifulSoup(body, parseOnlyThese=SoupStrainer('dd'))
         #get all the titles of the awrads
