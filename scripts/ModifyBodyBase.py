@@ -4,7 +4,7 @@ class ModifyBodyBase(object):
     __metaclass__ = abc.ABCMeta
     
     @abc.abstractmethod
-    def __init__(self, body, location):
+    def __init__(self, body, headers):
         return
     
     @abc.abstractmethod
@@ -22,9 +22,9 @@ class ModifyBodyBase(object):
         return
     
     @abc.abstractproperty
-    def location(self):
-        return 'location: nothing to see here, move along...'
+    def headers(self):
+        return 'headers: nothing to see here, move along...'
     
-    @location.setter
-    def location(self, newLocation):
+    @headers.setter
+    def headers(self, newHeaders):
         return

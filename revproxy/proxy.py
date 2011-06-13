@@ -189,7 +189,7 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
         #try: #uncomment try for development
         
         #create instance of implementation class of ModifyBodyBase
-        mb = mBImport.ModifyBody(tmpBody, headers[find_in_list(headers, 'Content-Location')][1])
+        mb = mBImport.ModifyBody(tmpBody, headers)
         mb.body_modification_logic()
         
         body = mb.body

@@ -13,9 +13,9 @@ from BeautifulSoup import NavigableString
 
 class ModifyBody(ModifyBodyBase):
     
-    def __init__(self, body, location):
+    def __init__(self, body, headers):
         self.body = body
-        self.location = location
+        self.headers = headers
     
     @property
     def body(self):
@@ -26,16 +26,16 @@ class ModifyBody(ModifyBodyBase):
         self._body = newBody
     
     @property
-    def location(self):
-        return self._location
+    def headers(self):
+        return self._headers
     
-    @location.setter
-    def location(self, newLocation):
-        self._location = newLocation
+    @headers.setter
+    def headers(self, newHeaders):
+        self._headers = newHeaders
     
     def body_modification_logic(self):
         
-        debug_print(self.location)
+        debug_print(self.headers)
         
         #we will work with utf8
         self.body = unicode(self.body, "utf-8", errors='replace')
