@@ -13,9 +13,18 @@ from BeautifulSoup import NavigableString
 
 class ModifyBody(ModifyBodyBase):
     
-    def __init__(self, body, headers):
+    def __init__(self, body, headers, proxied_url):
         self.body = body
         self.headers = headers
+        self.proxied_url = proxied_url
+    
+    @property
+    def proxied_url(self):
+        return self._proxied_url
+    
+    @proxied_url.setter
+    def proxied_url(self, newProxied_url):
+        self._proxied_url = newProxied_url
     
     @property
     def body(self):
@@ -191,6 +200,7 @@ class ModifyBody(ModifyBodyBase):
         
         #create a block of tabs(the content)
         for key, val in linkDict.iteritems():
+            
             tempFile = urllib2.urlopen(val).read()
             try:
                 #if we want to print there is the need to change errors to 'ignore'
@@ -270,10 +280,20 @@ class ModifyBody(ModifyBodyBase):
         
         #add prefix to the url
         for i in links:
-            #debug_print(settings.REVPROXY_SETTINGS[0][1])
-            linkList.append(settings.REVPROXY_SETTINGS[0][1] + i)
-        
+            linkList.append(self.guessBestUrl() + i)
+
         return linkList
+    
+    def guessBestUrl(self):
+        """We check if at least one of our proxied web urls (in the settings.py 
+        of Django root path) is contained in the requested url to proxy, by this
+        operation we ensure that we don't get urls like: http://.../index.html and 
+        only http://..."""
+        for i in settings.REVPROXY_SETTINGS:
+            if i[1] in self.proxied_url:
+                url = i[1]
+                break
+        return url
     
     def createAwardXML(self):
         body = self.body

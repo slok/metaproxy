@@ -255,8 +255,17 @@ class ModifyBody(ModifyBodyBase):
         
         #add prefix to the url
         for i in links:
-            #debug_print(settings.REVPROXY_SETTINGS[0][1])
-            linkList.append(settings.REVPROXY_SETTINGS[0][1] + i)
+            linkList.append(self.guessBestUrl() + i)
         
         return linkList
         
+    def guessBestUrl(self):
+        """We check if at least one of our proxied web urls (in the settings.py 
+        of Django root path) is contained in the requested url to proxy, by this
+        operation we ensure that we don't get urls like: http://.../index.html and 
+        only http://..."""
+        for i in settings.REVPROXY_SETTINGS:
+            if i[1] in self.proxied_url:
+                url = i[1]
+                break
+        return url

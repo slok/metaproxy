@@ -4,7 +4,7 @@ class ModifyBodyBase(object):
     __metaclass__ = abc.ABCMeta
     
     @abc.abstractmethod
-    def __init__(self, body, headers):
+    def __init__(self, body, headers, proxied_url):
         return
     
     @abc.abstractmethod
@@ -28,3 +28,12 @@ class ModifyBodyBase(object):
     @headers.setter
     def headers(self, newHeaders):
         return
+    
+    @abc.abstractproperty
+    def proxied_url(self):
+        return 'proxied_url: nothing to see here, move along...'
+    
+    @proxied_url.setter
+    def proxied_url(self, newProxied_url):
+        return
+    

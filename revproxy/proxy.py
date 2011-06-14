@@ -155,7 +155,6 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
 
     body =  resp.tee()
     headers = resp.headers.items()
-
 #-----------------------------------------------------------------------
     #if the type of the "package" isn't text and html, we don't want to
     # edit the bytes, because we will destroy the images, css...
@@ -189,7 +188,7 @@ def proxy_request(request, destination=None, prefix=None, headers=None,
         #try: #uncomment try for development
         
         #create instance of implementation class of ModifyBodyBase
-        mb = mBImport.ModifyBody(tmpBody, headers)
+        mb = mBImport.ModifyBody(tmpBody, headers, proxied_url)
         mb.body_modification_logic()
         
         body = mb.body

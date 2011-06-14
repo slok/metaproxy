@@ -7,7 +7,7 @@ from manager.forms import *
 from django.conf import settings
 from utils.utils import *
 import xml.dom.minidom
-
+import shutil
 ########################################################################
 
 @login_required
@@ -170,12 +170,15 @@ def manager_addweb_page(request):
             n = form.cleaned_data['name']
             u = form.cleaned_data['url']
             
-            #add url to the settings set the flag to good insertion and create dir
+            #add url to the settings set the flag to good insertion, create dir and add the default script
             insert_delete_web_in_settings(u, n, True)
             insert=True
             newFolderPath = 'scripts/'+n+'/'
+            fileName = 'ModifyBody.py'
+            #prepare dir
             create_dir(newFolderPath)
             create_blank_file(newFolderPath+'__init__.py')
+            shutil.copyfile('scripts/' + fileName, newFolderPath + fileName)
             
             #create a blank form again
             form = addWebForm()
