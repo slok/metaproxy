@@ -16,7 +16,8 @@ from restkit.manager import Manager
 from utils.utils import *
 import sys
 
-restkit.set_logging("debug")
+#'critical': 50,'error': 40, 'warning': 30, 'info': 20, 'debug': 10
+restkit.set_logging("info")
 
 from .util import absolute_uri, header_name, coerce_put_post, \
 rewrite_location, import_conn_manager, absolute_uri
