@@ -1,9 +1,13 @@
 import abc
 import urllib2
+import re
+
 from utils.utils import debug_print
 from utils.utils import draw_rdf_link_graph
 from scripts.ModifyBodyBase import ModifyBodyBase
+
 from django.conf import settings
+
 from BeautifulSoup import BeautifulSoup          # For processing HTML
 from BeautifulSoup import BeautifulStoneSoup     # For processing XML
 from BeautifulSoup import SoupStrainer
@@ -246,17 +250,35 @@ class ModifyBody(ModifyBodyBase):
         body = self.body
         links = []
         linkList = []
+        
+        #rdfHtmlRegex = '\.(html|rdf)' 
+        localRdfRegex = '^(?!http).*\.rdf$'
+        rdfMatch = re.compile(localRdfRegex)
+        
         #get all links
         for link in BeautifulSoup(body, parseOnlyThese=SoupStrainer('a')):
-            #get only links and .rdf ones [[[[[[[[[[[[[(POC .vcf too)]]]]]]]]]]]]]]]] delete .vcf
-            #if link.has_key('href') and ('.rdf' in link['href'] or '.vcf' in link['href']):
-            if link.has_key('href') and '.rdf' in link['href']:
-                links.append(link['href'])
+            #if is a link and matchs the pattern of a local RDF(Examples: foo.rdf or foo/bar.rdf)
+            # and not a link to an RDF(Example: http://www.foo.com/bar.rdf)
+            try:
+                href = link['href']
+                if re.search(rdfMatch, href):
+                    links.append(link['href'])
+            except:
+                pass
         
         #add prefix to the url
         for i in links:
-            #debug_print(settings.REVPROXY_SETTINGS[0][1])
-            linkList.append(settings.REVPROXY_SETTINGS[0][1] + i)
+            linkList.append(self.guessBestUrl() + i)
         
         return linkList
         
+    def guessBestUrl(self):
+        """We check if at least one of our proxied web urls (in the settings.py 
+        of Django root path) is contained in the requested url to proxy, by this
+        operation we ensure that we don't get urls like: http://.../index.html and 
+        only http://..."""
+        for i in settings.REVPROXY_SETTINGS:
+            if i[1] in self.proxied_url:
+                url = i[1]
+                break
+        return url

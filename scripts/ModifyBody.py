@@ -1,9 +1,13 @@
 import abc
 import urllib2
+import re
+
 from utils.utils import debug_print
 from utils.utils import draw_rdf_link_graph
 from scripts.ModifyBodyBase import ModifyBodyBase
+
 from django.conf import settings
+
 from BeautifulSoup import BeautifulSoup          # For processing HTML
 from BeautifulSoup import BeautifulStoneSoup     # For processing XML
 from BeautifulSoup import SoupStrainer
@@ -246,12 +250,21 @@ class ModifyBody(ModifyBodyBase):
         body = self.body
         links = []
         linkList = []
+        
+        #rdfHtmlRegex = '\.(html|rdf)' 
+        localRdfRegex = '^(?!http).*\.rdf$'
+        rdfMatch = re.compile(localRdfRegex)
+        
         #get all links
         for link in BeautifulSoup(body, parseOnlyThese=SoupStrainer('a')):
-            #get only links and .rdf ones [[[[[[[[[[[[[(POC .vcf too)]]]]]]]]]]]]]]]] delete .vcf
-            #if link.has_key('href') and ('.rdf' in link['href'] or '.vcf' in link['href']):
-            if link.has_key('href') and '.rdf' in link['href']:
-                links.append(link['href'])
+            #if is a link and matchs the pattern of a local RDF(Examples: foo.rdf or foo/bar.rdf)
+            # and not a link to an RDF(Example: http://www.foo.com/bar.rdf)
+            try:
+                href = link['href']
+                if re.search(rdfMatch, href):
+                    links.append(link['href'])
+            except:
+                pass
         
         #add prefix to the url
         for i in links:
