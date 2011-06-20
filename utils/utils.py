@@ -302,13 +302,21 @@ def draw_rdf_str_graph(rdfString, uri, storePath):
     gv.layout(gvv,'dot')
     gv.render(gvv,'png',storePath)
 #######################################################################################
-def draw_rdf_link_graph(rdfLink, storePath):
+def rdf_to_graph_file(rdfLink, storePath, fileType='png'):
     stre = parse_link(rdfLink)
     dotSer = serialize_stream(stre, 'dot')
 
     gvv = gv.readstring(dotSer)
     gv.layout(gvv,'dot')
-    gv.render(gvv,'png',storePath)
+    gv.render(gvv,fileType,storePath)
+#######################################################################################
+def rdf_to_graph_str(rdfLink):
+    stre = parse_link(rdfLink)
+    dotSer = serialize_stream(stre, 'dot')
 
+    gvv = gv.readstring(dotSer)
+    gv.layout(gvv,'dot')
+    graphStr = gv.renderdata(gvv,'svg')
+    return graphStr
 
 
