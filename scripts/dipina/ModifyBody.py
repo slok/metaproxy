@@ -94,6 +94,7 @@ class ModifyBody(ModifyBodyBase):
                     
                     <link href="/static/css/shCore.css" rel="stylesheet" type="text/css" />
                     <link href="/static/css/shThemeRDark.css" rel="stylesheet" type="text/css" />
+                    
                     <script type="text/javascript" src="/static/js/shCore.js"></script>
                     <script type="text/javascript" src="/static/js/shBrushXml.js"></script>
                     
@@ -213,8 +214,8 @@ class ModifyBody(ModifyBodyBase):
                 pass
             #add the tab block head 
             tmp = '<div id=\"fragment-'+ key +'\">'
-            #create and save the graph (is in the for, because is one grafh for each RDF/XML)        
-            graphDest = 'static/tmp/'+str(key)+'.png'
+            #create and save the graph (we put it inside the "for", because we have one graph for each RDF/XML)        
+            graphDest = 'static/tmp/'+str(key)+'.svg'
             
 ####################change is a PoC  
             #Instead of using a direct url to the RDF file to be converted into an image
@@ -223,13 +224,13 @@ class ModifyBody(ModifyBodyBase):
             
             #rdf_to_graph_file(val, graphDest)
             
-            rdf_to_graph_file('http://paginaspersonales.deusto.es/dipina/resources/diego.rdf', graphDest)
+            rdf_to_graph_file('http://paginaspersonales.deusto.es/dipina/resources/diego.rdf', graphDest, 'svg')
 ####################
 
             #show graph in html
             #graph = '<a href=\"/static/tmp/'+key+'.png\"\"><img src=\"/static/tmp/'+key+'.png\" alt=\"graph\" width=\"500\" height=\"350\"/></a>'
             
-            #We retrieve the dir of the src image 
+            #We retrieve the dir of the src image to show it in the viewer 
             imgSource=' src: "/'+graphDest+'",'
             
             preEnd2= """
@@ -247,8 +248,7 @@ class ModifyBody(ModifyBodyBase):
                     </div>
                  """
             
-            
-            #and last but not least add all the parts to create one (html to rule them 
+            #and last but not least add all the parts to create a single html (One html to rule them 
             #all, one html to find them, one html to bring them all and in the darkness bind them)
             finalHtml = finalHtml + tmp +preStart + tempFile + preEnd + imgSource + preEnd2 +'</div>'
         
