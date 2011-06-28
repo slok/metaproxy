@@ -4,9 +4,9 @@ Metaproxy
 Description
 -----------
 
-Metaproxy is a reverse proxy(based on `dj-revproxy <https://github.com/benoitc/dj-revproxy>`_) 
-that allows yo to interact with the html code. Metaproxy gets metadata
-from the webpage and shows in different ways
+Metaproxy is a reverse proxy (based on `dj-revproxy <https://github.com/benoitc/dj-revproxy>`_) 
+that allows you to interact with the html code. Metaproxy gets metadata
+from the webpage and shows in different ways (such as code and graphical version).
 
 Requeriments(Dependencies)
 --------------------------
