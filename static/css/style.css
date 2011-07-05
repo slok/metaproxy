@@ -123,7 +123,7 @@ a:hover {
 	display: inline;
 }
 
-#nbar ul li a {
+#nbar ul li a.normal {
 	display: block;
 	height: 25px;
 	float: left;
@@ -134,16 +134,32 @@ a:hover {
 	border-right: dotted 1px #666;
 }
 
-
-#nbar ul li a:hover {
+#nbar ul li a.normal:hover {
 	color: #000;
 	padding-top: 2px;
 }
 
-#nbar ul li#selected a {
+#nbar ul li#selected a.normal {
 	color: #000;
 	/*background: url(../img/nbg-inv.png) top repeat-x;*/
 	font-weight: bold;
+}
+
+#nbar ul li a.logout {
+	display: block;
+	height: 25px;
+	float: right;
+    padding: 0 10px;
+	color: #333;
+	text-decoration: none;
+	background: none;
+	border-left: dotted 1px #666;
+    margin-left: 725px;
+}
+
+#nbar ul li a.logout:hover {
+	color: #000;
+	padding-top: 2px;
 }
 
 /* Intro */
@@ -221,8 +237,8 @@ a:hover {
 /* content is king */
 
 #content-bottom {
-	height: 48px;
-	padding-top: 10px;
+	height: 70px;
+	padding-top: 5px;
 	color: #000;
 	font-size: 11px;
 	background: #666 url(../img/content-bottom.png) no-repeat;
@@ -280,13 +296,34 @@ a:hover {
 	color: #000;
 }
 
-#homecontent {
-	width: 640px;
+/* Login Manager*/
+
+#loginBox {
+	width: 500px;
+    height: auto;
 	margin: 10px 10px 0 10px;
 	text-align: justify;
 	font-size: 12px;
+    position:relative;
 }
 
+#loginForm {
+    margin: 40px 0px 40px 40px;
+    position:relative;
+}
+
+#imgLogin {
+    padding-left: 275px;
+    padding-top: 10px;
+    position:absolute;
+    
+}
+
+#submitButton {
+    margin-left: 73px;
+    margin-bottom: 10px;
+    margin-top: 20px;
+}
 
 /* home sidebar */
 
@@ -580,13 +617,14 @@ ul span, ol span {
 
 /* Footer */
 
-#footer {
-	float:left;
-	text-align: center;
+#footer { 
+
 }
-#badges {
-	float:left;
+
+#footerText {
+    padding-left: 60px;
 }
+
 #footer a {
 	color: #000;
 }

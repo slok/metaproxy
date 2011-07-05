@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <title>Meta Proxy</title>
+{% endblock %}
+
+{%block body %}
+
+   <div id="managerBack">
+	<h2>Add web to proxy it</h2>
+        <p>
+            {% if insert %}
+            <p>Webpage added!</p>
+            {% endif %}
+	  
+            <form action="/manager/addweb/" method="post" enctype="multipart/form-data">{% csrf_token %}
+                <p>
+                    {{ form.as_p }}
+                </p>
+                <p><input type="submit" value="Submit"/></p>
+            </form>
+        </p>
+        
+    </div>
+    <div id="managerBack">
+        <p>
+            <table align="center" class="stats" cellspacing="0">
+            <tr>
+                <th >Name</th>
+                <th >URI</th>
+                <th >Delete</th>
+            </tr>
+            {% for item in webs %}
+            <tr>
+                <td>{{item.0}}</td>
+                <td>{{item.1}}</td>
+                <td >
+                    <a href="/manager/addweb/{{item.0}}">
+                    <div id="centeredContent"><img src="/static/img/delete.png" border="0" 
+                            alt="delete_web" width="48" height="48"></div>
+                    </a> 
+                </td>
+            </tr>
+            {% endfor %}  
+            </table> 
+        </p>
+        <br/>
+    </div>
+    <div id="line"></div>
+    <div class="clearfix"></div>
+{% endblock %}
+
+ 

@@ -10,6 +10,8 @@ urlpatterns = patterns('',
     (r'^sparql/$', manager_sparql_queries_page),
     (r'^scripts/$', manager_scripts_page),
     (r'^scripts/(?P<id>\w+)/$', manager_scripts_code_page),
+    (r'^addweb/$', manager_addweb_page),
+    (r'^addweb/(?P<id>\w+)/$', manager_addweb_delete_page),
 
 )
 

@@ -7,7 +7,7 @@
 {% block body %}
     <section>
         <div id="content-wrap">
-	  <div id="homecontent">
+	  <div id="loginBox">
 	    <h2>Login</h2>
 
 	    {% if form.errors %}
@@ -15,23 +15,26 @@
 	    {% endif %}
 	  
 	  <form method="post" action=".">{%csrf_token%}
-	    <div id="homecontent">
-	      <p>
-		  <label for="id_username">Username:</label>
-		  {{ form.username }}
-	      </p>
-	      <p>
-		  <label for="id_password">Password:</label>
-		  {{ form.password }}
-	      </p>
-	      {% if next %}
-		  <input type="hidden" name="next" value="{{ next }}" />
-	      {% else %}
-		  <input type="hidden" name="next" value="/manager/" />
-	      {% endif %}
-	      <p>
-		<input type="submit" value="login" alignment="center" />
-	      </p>
+	    <div id="login">
+	      <img src="/static/img/lock.png" alt="Login" id="imgLogin"/>
+          <div id="loginForm">
+              <p>
+                  <label for="id_username">Username:</label>
+                  {{ form.username }}
+              </p>
+              <p>
+                  <label for="id_password">Password:</label>
+                  {{ form.password }}
+              </p>
+              {% if next %}
+              <input type="hidden" name="next" value="{{ next }}" />
+              {% else %}
+              <input type="hidden" name="next" value="/manager/" />
+              {% endif %}
+              <p>
+                  <input type="submit" value="login" id="submitButton"/>
+              </p>
+          </div>     
 	    </div>
 	  </form>  
 	  </div>

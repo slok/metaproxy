@@ -7,6 +7,8 @@ from manager.forms import *
 from django.conf import settings
 from utils.utils import *
 import xml.dom.minidom
+import shutil
+########################################################################
 
 @login_required
 def manager_main_page(request):
@@ -159,6 +161,50 @@ def manager_scripts_code_page(request, id):
     except:
         return HttpResponseRedirect("/manager/scripts")
 
+def manager_addweb_page(request):
+    insert = False
+    if request.method == 'POST':
+        form = addWebForm(request.POST)
+        if form.is_valid():
+            #get data from the form
+            n = form.cleaned_data['name']
+            u = form.cleaned_data['url']
+            
+            #add url to the settings set the flag to good insertion, create dir and add the default script
+            insert_delete_web_in_settings(u, n, True)
+            insert=True
+            newFolderPath = 'scripts/'+n+'/'
+            fileName = 'ModifyBody.py'
+            #prepare dir
+            create_dir(newFolderPath)
+            create_blank_file(newFolderPath+'__init__.py')
+            shutil.copyfile('scripts/' + fileName, newFolderPath + fileName)
+            
+            #create a blank form again
+            form = addWebForm()
+    else:
+        form = addWebForm()
+    
+        
+    #the data for the html (variables...)
+    pageData = {'form': form,
+    'webs':settings.REVPROXY_SETTINGS,
+    'insert':insert,
+    }
+    #returning html, data, csrf token...
+    return render_to_response('manager/addweb.html', pageData, context_instance=RequestContext(request))
+
+def manager_addweb_delete_page(request, id):
+    n = id
+    #search for the element in the list
+    for item in settings.REVPROXY_SETTINGS:
+        if item[0] == n:
+            u = item[1]
+    #delete from settings
+    insert_delete_web_in_settings(u, n, False)
+    
+    return HttpResponseRedirect("/manager/addweb")
+########################################################################
 
 def handle_uploaded_file(f):
     filePath = settings.UPLOAD_URL
@@ -189,8 +235,38 @@ def read_file_Script(script):
 def read_file(filePath):
     return open(filePath, 'r').read()
 
-
-
-
-  
-  
+def insert_delete_web_in_settings(url, name, add):
+    #("google", "http://google.com"), style
+    newWebStr = '\n    (\"' + name + '\", \"' + url + '\"),' 
+    #open the file
+    inFile = open('settings.py', 'r')
+    #read and modify the string
+    settingsStr = ''
+    for line in inFile.readlines():
+        settingsStr = settingsStr+line
+    
+    #add or delete the line
+    if add:
+        #only add if it isnet in the file
+        if(settingsStr.find(newWebStr) == -1):
+            strToFind = 'REVPROXY_SETTINGS = ['
+            position = settingsStr.find(strToFind)
+            position = position + len(strToFind)
+            settingsStr= settingsStr[:position] + newWebStr + settingsStr[(position):]
+    else:
+        settingsStr = settingsStr.replace(newWebStr, '')
+    #close the input file
+    inFile.close()
+    #open the file in write mode
+    outFile = open('settings.py', 'w')
+    outFile.write(settingsStr)
+    outFile.close()
+     
+def create_dir(path):
+    dir = os.path.dirname(path)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+def create_blank_file(path):
+    outFile = open(path, 'w')
+    outFile.write('')
+    outFile.close()
