@@ -149,6 +149,7 @@ class ModifyBody(ModifyBodyBase):
 
         initHTML= """
                   <body>
+                    <div id="homeLink"><a href="/"><img id="homeButton" src="/static/img/home.png" alt="Return Home"/></a></div>
                     <div id="tabs">
                         <ul>"""+ tabs +"""
                         </ul>

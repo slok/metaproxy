@@ -147,6 +147,7 @@ class ModifyBody(ModifyBodyBase):
 
         initHTML= """
                   <body>
+                    <div id="homeLink"><a href="/"><img id="homeButton" src="/static/img/home.png" alt="Return Home"/></a></div>
                     <div id="tabs">
                         <ul>"""+ tabs +"""
                         </ul>
@@ -214,7 +215,7 @@ class ModifyBody(ModifyBodyBase):
             
             #rdf_to_graph_file(val, graphDest)
             
-            rdf_to_graph_file('http://paginaspersonales.deusto.es/dipina/resources/diego.rdf', graphDest)
+            rdf_to_graph_file('http://paginaspersonales.deusto.es/dipina/resources/diego.rdf', graphDest, 'svg')
 ####################
 
             #show graph in html
