@@ -170,16 +170,19 @@ def manager_addweb_page(request):
             n = form.cleaned_data['name']
             u = form.cleaned_data['url']
             
-            #add url to the settings set the flag to good insertion, create dir and add the default script
+            #add url to the settings set the flag to good insertion,
             insert_delete_web_in_settings(u, n, True)
             insert=True
+            #create dir
             newFolderPath = 'scripts/'+n+'/'
             fileName = 'ModifyBody.py'
-            #prepare dir
+            #prepare dir (init and default script)
             create_dir(newFolderPath)
             create_blank_file(newFolderPath+'__init__.py')
             shutil.copyfile('scripts/' + fileName, newFolderPath + fileName)
-            
+            #########################################
+            #Create database!!!!                    #
+            #########################################
             #create a blank form again
             form = addWebForm()
     else:
@@ -197,11 +200,16 @@ def manager_addweb_page(request):
 def manager_addweb_delete_page(request, id):
     n = id
     #search for the element in the list
+    
     for item in settings.REVPROXY_SETTINGS:
         if item[0] == n:
             u = item[1]
-    #delete from settings
-    insert_delete_web_in_settings(u, n, False)
+            #delete from settings
+            insert_delete_web_in_settings(u, n, False)
+            #delete dir
+            rmFolderPath = 'scripts/'+n+'/'
+            delete_dir(rmFolderPath)
+            break
     
     return HttpResponseRedirect("/manager/addweb")
 ########################################################################
@@ -254,6 +262,7 @@ def insert_delete_web_in_settings(url, name, add):
             position = position + len(strToFind)
             settingsStr= settingsStr[:position] + newWebStr + settingsStr[(position):]
     else:
+        print newWebStr
         settingsStr = settingsStr.replace(newWebStr, '')
     #close the input file
     inFile.close()
@@ -266,6 +275,13 @@ def create_dir(path):
     dir = os.path.dirname(path)
     if not os.path.exists(dir):
         os.makedirs(dir)
+        
+def delete_dir(path):
+    dir = os.path.dirname(path)
+    print dir
+    if os.path.exists(dir):
+        shutil.rmtree(dir)
+        
 def create_blank_file(path):
     outFile = open(path, 'w')
     outFile.write('')
