@@ -225,7 +225,7 @@ class ModifyBody(ModifyBodyBase):
             
             #rdf_to_graph_file(val, graphDest)
             
-            rdf_to_graph_file('http://paginaspersonales.deusto.es/dipina/resources/diego.rdf', graphDest, 'svg')
+            rdf_to_graph_file(val, graphDest, 'svg')
 ####################
 
             #show graph in html

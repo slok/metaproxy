@@ -3,7 +3,7 @@ import urllib2
 import re
 
 from utils.utils import debug_print
-from utils.utils import draw_rdf_link_graph
+from utils.utils import rdf_to_graph_file
 from scripts.ModifyBodyBase import ModifyBodyBase
 
 from django.conf import settings
@@ -147,6 +147,7 @@ class ModifyBody(ModifyBodyBase):
 
         initHTML= """
                   <body>
+                    <div id="homeLink"><a href="/"><img id="homeButton" src="/static/img/home.png" alt="Return Home"/></a></div>
                     <div id="tabs">
                         <ul>"""+ tabs +"""
                         </ul>
@@ -212,9 +213,9 @@ class ModifyBody(ModifyBodyBase):
             #we should use the draw_rdf_link_graph method that uses the variable 'val'
             #(the one that is commented below this line)
             
-            #draw_rdf_link_graph(val, graphDest)
+            #rdf_to_graph_file(val, graphDest)
             
-            draw_rdf_link_graph('http://paginaspersonales.deusto.es/dipina/resources/diego.rdf', graphDest)
+            rdf_to_graph_file(val, graphDest, 'svg')
 ####################
 
             #show graph in html
