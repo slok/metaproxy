@@ -46,13 +46,13 @@ class ModifyBody(ModifyBodyBase):
         #we will work with utf8
         self.body = unicode(self.body, "utf-8", errors='replace')
         
-        newBody = self.change_Css()
-        headHtml = self.get_Head_and_insert_Css(newBody)
-        bodyHtml = self.get_body_html(newBody)
+        newBody = self._change_Css()
+        headHtml = self._get_Head_and_insert_Css(newBody)
+        bodyHtml = self._get_body_html(newBody)
                  
         self.body =  headHtml + bodyHtml
         
-    def change_Css(self):
+    def _change_Css(self):
         
         body = self.body
         
@@ -67,7 +67,7 @@ class ModifyBody(ModifyBodyBase):
         
         return changedHtml
         
-    def get_Head_and_insert_Css(self, body):
+    def _get_Head_and_insert_Css(self, body):
         
         print "####[getting head]####"
         posHead = body.find("</head>") - 1
@@ -84,7 +84,7 @@ class ModifyBody(ModifyBodyBase):
         
         return head
     
-    def get_body_html(self, body):
+    def _get_body_html(self, body):
         
         regularExpressionIn = '<body[\w"= ]*>'
         reg = re.compile(regularExpressionIn)

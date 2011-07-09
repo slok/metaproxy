@@ -53,12 +53,12 @@ class ModifyBody(ModifyBodyBase):
         #we will work with utf8
         self.body = unicode(self.body, "utf-8", errors='replace')
         
-        head = self.get_Head_and_insert_js()
-        bodyHtml = self.get_body_html()
+        head = self._get_Head_and_insert_js()
+        bodyHtml = self._get_body_html()
                  
         self.body = head + bodyHtml
 
-    def get_Head_and_insert_js(self):
+    def _get_Head_and_insert_js(self):
         
         body = self.body
         print "####[getting head]####"
@@ -115,19 +115,19 @@ class ModifyBody(ModifyBodyBase):
         
         return head
     
-    def get_body_html(self):
+    def _get_body_html(self):
         body = self.body
         
         posBody = body[(body.find("<body>") + 6): body.find("</body>")]
         #get data
         syntaxHigh='<script type="text/javascript">SyntaxHighlighter.all()</script>'
-        awardXML = self.createAwardXML()
-        awardXML = self.addRDFsCodeInHTMLStr(awardXML)
+        awardXML = self._createAwardXML()
+        awardXML = self._addRDFsCodeInHTMLStr(awardXML)
         
         #tab necessary data
         rdfNameAndUrl={}
         tabs = '<li><a href="#fragment-web"><span>WebPage</span></a></li>'
-        links = self.getAllRdfLinks()
+        links = self._getAllRdfLinks()
         
         for i in links:
             #split the url to get the final name
@@ -145,7 +145,7 @@ class ModifyBody(ModifyBodyBase):
         tabs = tabs + '\n<li><a href=\"#fragment-scrapp\"><span>Web Scrapping(Awards)</span></a></li>'
 
         #get all the HTM code fragment from the RDF tabs
-        rdfs = self.addRDFsCodeInHTMLLinks(rdfNameAndUrl)
+        rdfs = self._addRDFsCodeInHTMLLinks(rdfNameAndUrl)
 
         initHTML= """
                   <body>
@@ -182,7 +182,7 @@ class ModifyBody(ModifyBodyBase):
             final = final + string
         return final
 
-    def addRDFsCodeInHTMLLinks(self, linkDict):
+    def _addRDFsCodeInHTMLLinks(self, linkDict):
         finalHtml=''
         preStart = """
                     <div id = "code">
@@ -256,7 +256,7 @@ class ModifyBody(ModifyBodyBase):
         #debug_print(finalHtml)
         return finalHtml
     
-    def addRDFsCodeInHTMLStr(self, xml):
+    def _addRDFsCodeInHTMLStr(self, xml):
         
         ini = """
                 <div id = "code">
@@ -272,7 +272,7 @@ class ModifyBody(ModifyBodyBase):
     
         return finalHtml
     
-    def getAllRdfLinks(self):
+    def _getAllRdfLinks(self):
         body = self.body
         links = []
         linkList = []
@@ -294,11 +294,11 @@ class ModifyBody(ModifyBodyBase):
         
         #add prefix to the url
         for i in links:
-            linkList.append(self.guessBestUrl() + i)
+            linkList.append(self._guessBestUrl() + i)
 
         return linkList
     
-    def guessBestUrl(self):
+    def _guessBestUrl(self):
         """We check if at least one of our proxied web urls (in the settings.py 
         of Django root path) is contained in the requested url to proxy, by this
         operation we ensure that we don't get urls like: http://.../index.html and 
@@ -309,7 +309,7 @@ class ModifyBody(ModifyBodyBase):
                 break
         return url
     
-    def createAwardXML(self):
+    def _createAwardXML(self):
         body = self.body
         #get all the blocks of wards
         htmlSoup = BeautifulSoup(body, parseOnlyThese=SoupStrainer('dd'))
