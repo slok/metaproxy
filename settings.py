@@ -100,8 +100,8 @@ TEMPLATE_DIRS = (
 
 REVPROXY_SETTINGS = [
     ("dipina", "http://paginaspersonales.deusto.es/dipina/"),
-	("dbujan", "http://paginaspersonales.deusto.es/dbujan/"),
-	("slok", "http://slok.homelinux.com")
+    ("dbujan", "http://paginaspersonales.deusto.es/dbujan/"),
+    ("slok", "http://slok.homelinux.com/"),
 ]
 
 INSTALLED_APPS = (
