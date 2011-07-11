@@ -138,7 +138,7 @@ class ModifyBody(ModifyBodyBase):
             name = tmp[len(tmp)-1]
             name = name.split('.')
             finalName = name[0]
-            finalNamePar = finalName + '(RDF-XML)'
+            finalNamePar = finalName + '(RDF/XML)'
             #create the HTML code for the tab declaration
             tabs = tabs + '\n<li><a href=\"#fragment-'+ finalName +'\"><span>' + finalNamePar + '</span></a></li>'
             #add to the dict
@@ -179,6 +179,9 @@ class ModifyBody(ModifyBodyBase):
         return final
 
     def _addRDFsCodeInHTMLLinks(self, linkDict):
+        """
+        Get the content of the RDF and apply them to the final HTML, returns the HTML
+        """
         finalHtml=''
         preStart = """
                     <div id = "code">
@@ -242,6 +245,9 @@ class ModifyBody(ModifyBodyBase):
         return finalHtml
     
     def _getAllRdfLinks(self):
+        """
+        Get all the RDF links that are in the HTML and return the links in a list
+        """
         body = self.body
         links = []
         linkList = []
