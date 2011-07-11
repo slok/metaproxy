@@ -1,9 +1,11 @@
 import abc
 import urllib2
 import re
+import RDF
 
-from utils.utils import debug_print
-from utils.utils import rdf_to_graph_file
+#from utils.utils import debug_print
+#from utils.utils import rdf_to_graph_file
+from utils import utils
 from scripts.ModifyBodyBase import ModifyBodyBase
 
 from django.conf import settings
@@ -48,7 +50,7 @@ class ModifyBody(ModifyBodyBase):
     
     def body_modification_logic(self):
         
-        debug_print(self.headers)
+        utils.debug_print(self.headers)
         
         #we will work with utf8
         self.body = unicode(self.body, "utf-8", errors='replace')
@@ -103,9 +105,13 @@ class ModifyBody(ModifyBodyBase):
                     <link href="/static/css/jquery.iviewer.css" rel="stylesheet" type="text/css" />
 
                    """
+        regularExpressionIn = '<head[\w"=\/\:\.\- ]*>'
+        reg = re.compile(regularExpressionIn)
+        m = reg.search(body)
+        
         bodyAux = body[:posHead] + jQScript + body[(posHead):]
         
-        head =  bodyAux[bodyAux.find("<head>"): bodyAux.find("</head>") + 7]
+        head =  bodyAux[m.start(0): bodyAux.find("</head>") + 7]
         
         #convert result to unicode(if they are unicode already exception will be catch and wouldn't be done nothing)
         try:
@@ -121,8 +127,6 @@ class ModifyBody(ModifyBodyBase):
         posBody = body[(body.find("<body>") + 6): body.find("</body>")]
         #get data
         syntaxHigh='<script type="text/javascript">SyntaxHighlighter.all()</script>'
-        awardXML = self._createAwardXML()
-        awardXML = self._addRDFsCodeInHTMLStr(awardXML)
         
         #tab necessary data
         rdfNameAndUrl={}
@@ -135,14 +139,17 @@ class ModifyBody(ModifyBodyBase):
             name = tmp[len(tmp)-1]
             name = name.split('.')
             finalName = name[0]
-            finalNamePar = finalName + '(RDF-XML)'
+            finalNamePar = finalName + '(RDF/XML)'
             #create the HTML code for the tab declaration
             tabs = tabs + '\n<li><a href=\"#fragment-'+ finalName +'\"><span>' + finalNamePar + '</span></a></li>'
             #add to the dict
             rdfNameAndUrl[finalName] = i
             
-        tabs = tabs + '\n<li><a href=\"#fragment-grddl\"><span>GRDDL Parsing</span></a></li>'
-        tabs = tabs + '\n<li><a href=\"#fragment-scrapp\"><span>Web Scrapping(Awards)</span></a></li>'
+        grddlXML=''
+        if self._checkGRDDL():
+            tabs = tabs + '\n<li><a href=\"#fragment-grddl\"><span>GRDDL Parsing</span></a></li>'
+            #GRDDL parsing
+            grddlXML = self._parseGRDDL()
 
         #get all the HTM code fragment from the RDF tabs
         rdfs = self._addRDFsCodeInHTMLLinks(rdfNameAndUrl)
@@ -170,8 +177,10 @@ class ModifyBody(ModifyBodyBase):
                 </body>
             </html>
                  """
+        
+
         #return initHTML + posBody + frag2 + rdfs + frag3 + 'VOID'+ frag4+ awardXML +syntaxHigh + finHTML
-        stringsForHTML = [initHTML, posBody, fragRDFs, rdfs, fragGrddl, 'call to the grddl parser', fragScrap, awardXML, syntaxHigh, finHTML]
+        stringsForHTML = [initHTML, posBody, fragRDFs, rdfs, fragGrddl, grddlXML, syntaxHigh, finHTML]
         final = ''
         #convert all to unicode(if they are unicode already exception will be catch and wouldn't be done nothing)
         for string in  stringsForHTML:
@@ -218,18 +227,7 @@ class ModifyBody(ModifyBodyBase):
             #create and save the graph (we put it inside the "for", because we have one graph for each RDF/XML)        
             graphDest = 'static/tmp/'+str(key)+'.svg'
             
-####################change is a PoC  
-            #Instead of using a direct url to the RDF file to be converted into an image
-            #we should use the draw_rdf_link_graph method that uses the variable 'val'
-            #(the one that is commented below this line)
-            
-            #rdf_to_graph_file(val, graphDest)
-            
-            rdf_to_graph_file(val, graphDest, 'svg')
-####################
-
-            #show graph in html
-            #graph = '<a href=\"/static/tmp/'+key+'.png\"\"><img src=\"/static/tmp/'+key+'.png\" alt=\"graph\" width=\"500\" height=\"350\"/></a>'
+            utils.rdf_to_graph_file(val, graphDest, 'svg')
             
             #We retrieve the dir of the src image to show it in the viewer 
             imgSource=' src: "/'+graphDest+'",'
@@ -257,6 +255,9 @@ class ModifyBody(ModifyBodyBase):
         return finalHtml
     
     def _addRDFsCodeInHTMLStr(self, xml):
+        """
+        Get the content of the RDF and apply them to the final HTML, returns the HTML
+        """
         
         ini = """
                 <div id = "code">
@@ -273,6 +274,9 @@ class ModifyBody(ModifyBodyBase):
         return finalHtml
     
     def _getAllRdfLinks(self):
+        """
+        Get all the RDF links that are in the HTML and return the links in a list
+        """
         body = self.body
         links = []
         linkList = []
@@ -308,61 +312,31 @@ class ModifyBody(ModifyBodyBase):
                 url = i[1]
                 break
         return url
-    
-    def _createAwardXML(self):
-        body = self.body
-        #get all the blocks of wards
-        htmlSoup = BeautifulSoup(body, parseOnlyThese=SoupStrainer('dd'))
-        #get all the titles of the awrads
-        htmlTitles = BeautifulSoup(body, parseOnlyThese=SoupStrainer('dt'))
-        awardCont = 0
-        
-        #create RDF and properties
-        xmlSoup = BeautifulStoneSoup()
-        rdfRDF = Tag(xmlSoup, 'rdf:RDF',[('xmlns:rdf','http://www.w3.org/1999/02/22-rdf-syntax-ns#')
-                                    ,('xmlns:dc', 'http://purl.org/dc/elements/1.1/') ])
-        
-        #add to the xml first property
-        xmlSoup.append(rdfRDF)
-        for award in htmlSoup: #get "dd" blocks (each is an award)
+    def _checkGRDDL(self):
+        """
+        Checks if the document(HTML) has GRDDL
+        """
+        #rel="transformation" href=
+        regularExpressionIn = ' +rel *= *" *transformation *" *href *='
+        reg = re.compile(regularExpressionIn)
+        aux = reg.findall(self.body)
+        #if is GRDDL then parse
+        if len(aux) > 0:
+            return True
+        else:
+            return False
             
-            dcDate = Tag(xmlSoup, 'dc:date')
-            dcContrib =  Tag(xmlSoup, 'dc:contributor')
-            dcCreator =  Tag(xmlSoup, 'dc:creator')
-            dcRelation =  Tag(xmlSoup, 'dc:relation')
-            
-            #add titles to rdf description
-            rdfDesc = Tag(xmlSoup, 'rdf:Description', [('dc:title', htmlTitles.contents[awardCont].contents[0])])
-            rdfRDF.append(rdfDesc)
-            #increment the titles counter
-            awardCont = awardCont + 1
-            
-            for awardProp in award.contents: #get each div block (content of dd)
-                try:
-                    for props in awardProp.contents: #get each property
-                        try:
-                            print props.contents[0].contents[0]
-                            if len(props.contents) == 2:
-                                if props.contents[0].contents[0] == 'Date' or  props.contents[0].contents[0] == 'date':
-                                    rdfDesc.append(dcDate)
-                                    dcDate.insert(0, NavigableString(props.contents[1]))
-                                elif props.contents[0].contents[0] == 'Entity' or  props.contents[0].contents[0] == 'entity': #error in Alava enprender link
-                                     rdfDesc.append(dcContrib)
-                                     dcContrib.insert(0, NavigableString(props.contents[1]))
-                                elif props.contents[0].contents[0] == 'Author' or  props.contents[0].contents[0] == 'author' or \
-                                    props.contents[0].contents[0] == 'Authors' or  props.contents[0].contents[0] == 'authors': 
-                                     rdfDesc.append(dcCreator)
-                                     dcCreator.insert(0, NavigableString(props.contents[1]))
-                                elif props.contents[0].contents[0] == 'Role' or  props.contents[0].contents[0] == 'role': 
-                                     rdfDesc.append(dcRelation)
-                                     dcRelation.insert(0, NavigableString(props.contents[1])) 
-                                """if props.contents[0].contents[0] == 'Title' or props.contents[0].contents[0] == 'title':
-                                    rdfDesc = Tag(xmlSoup, 'rdf:Description', [('dc:title', props.contents[1])])
-                                    rdfRDF.append(rdfDesc)
-                                else:"""
-                        except:
-                            pass
-                except:
-                    pass
+    def _parseGRDDL(self):
+        """
+        Checks if the document(HTML) has GRDDL and if it has, then parse to 
+        extract the RDF in XML format 
+        """
 
-        return xmlSoup.prettify()
+        #if is GRDDL then parse
+        if self._checkGRDDL():
+            parser = RDF.Parser(name='grddl')
+            stream = parser.parse_string_as_stream(self.body, self.proxied_url) 
+            return utils.serialize_stream(stream)
+        else:
+            #return None
+            return 'No GRDDL in this html....'

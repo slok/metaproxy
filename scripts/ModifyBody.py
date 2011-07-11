@@ -1,9 +1,11 @@
 import abc
 import urllib2
 import re
+import RDF
 
-from utils.utils import debug_print
-from utils.utils import rdf_to_graph_file
+#from utils.utils import debug_print
+#from utils.utils import rdf_to_graph_file
+from utils import utils
 from scripts.ModifyBodyBase import ModifyBodyBase
 
 from django.conf import settings
@@ -48,7 +50,7 @@ class ModifyBody(ModifyBodyBase):
     
     def body_modification_logic(self):
         
-        debug_print(self.headers)
+        utils.debug_print(self.headers)
         
         #we will work with utf8
         self.body = unicode(self.body, "utf-8", errors='replace')
@@ -102,9 +104,13 @@ class ModifyBody(ModifyBodyBase):
                     <link href="/static/css/jquery.iviewer.css" rel="stylesheet" type="text/css" />
 
                    """
+        regularExpressionIn = '<head[\w"=\/\:\.\- ]*>'
+        reg = re.compile(regularExpressionIn)
+        m = reg.search(body)
+        
         bodyAux = body[:posHead] + jQScript + body[(posHead):]
         
-        head =  bodyAux[bodyAux.find("<head>"): bodyAux.find("</head>") + 7]
+        head =  bodyAux[m.start(0): bodyAux.find("</head>") + 7]
         
         #convert result to unicode(if they are unicode already exception will be catch and wouldn't be done nothing)
         try:
@@ -140,7 +146,6 @@ class ModifyBody(ModifyBodyBase):
             
         #set all the tabs that we want
         #tabs = tabs + '\n<li><a href=\"#fragment-grddl\"><span>GRDDL Parsing</span></a></li>'
-        #tabs = tabs + '\n<li><a href=\"#fragment-scrapp\"><span>Web Scrapping(Awards)</span></a></li>'
 
         #get all the HTM code fragment from the RDF tabs
         rdfs = self._addRDFsCodeInHTMLLinks(rdfNameAndUrl)
@@ -206,22 +211,11 @@ class ModifyBody(ModifyBodyBase):
             #add the tab block head 
             tmp = '<div id=\"fragment-'+ key +'\">'
             #create and save the graph (is in the for, because is one grafh for each RDF/XML)        
-            graphDest = 'static/tmp/'+str(key)+'.png'
+            graphDest = 'static/tmp/'+str(key)+'.svg'
             
-####################change is a PoC  
-            #Instead of using a direct url to the RDF file to be converted into an image
-            #we should use the draw_rdf_link_graph method that uses the variable 'val'
-            #(the one that is commented below this line)
+            utils.rdf_to_graph_file(val, graphDest, 'svg')
             
-            #rdf_to_graph_file(val, graphDest)
-            
-            rdf_to_graph_file(val, graphDest, 'svg')
-####################
-
-            #show graph in html
-            #graph = '<a href=\"/static/tmp/'+key+'.png\"\"><img src=\"/static/tmp/'+key+'.png\" alt=\"graph\" width=\"500\" height=\"350\"/></a>'
-            
-            #We retrieve the dir of the src image 
+            #We retrieve the dir of the src image to show it in the viewer 
             imgSource=' src: "/'+graphDest+'",'
             
             preEnd2= """
@@ -269,7 +263,7 @@ class ModifyBody(ModifyBodyBase):
         
         #add prefix to the url
         for i in links:
-            linkList.append(self.guessBestUrl() + i)
+            linkList.append(self._guessBestUrl() + i)
         
         return linkList
         
@@ -283,3 +277,32 @@ class ModifyBody(ModifyBodyBase):
                 url = i[1]
                 break
         return url
+        
+    def _checkGRDDL(self):
+        """
+        Checks if the document(HTML) has GRDDL
+        """
+        #rel="transformation" href=
+        regularExpressionIn = ' +rel *= *" *transformation *" *href *='
+        reg = re.compile(regularExpressionIn)
+        aux = reg.findall(self.body)
+        #if is GRDDL then parse
+        if len(aux) > 0:
+            return True
+        else:
+            return False
+            
+    def _parseGRDDL(self):
+        """
+        Checks if the document(HTML) has GRDDL and if it has, then parse to 
+        extract the RDF in XML format 
+        """
+
+        #if is GRDDL then parse
+        if self._checkGRDDL():
+            parser = RDF.Parser(name='grddl')
+            stream = parser.parse_string_as_stream(self.body, self.proxied_url) 
+            return utils.serialize_stream(stream)
+        else:
+            #return None
+            return 'No GRDDL in this html....'
