@@ -2,19 +2,10 @@ import abc
 import urllib2
 import re
 import RDF
-
-#from utils.utils import debug_print
-#from utils.utils import rdf_to_graph_file
 from utils import utils
 from scripts.ModifyBodyBase import ModifyBodyBase
-
 from django.conf import settings
-
-from BeautifulSoup import BeautifulSoup          # For processing HTML
-from BeautifulSoup import BeautifulStoneSoup     # For processing XML
-from BeautifulSoup import SoupStrainer
-from BeautifulSoup import Tag
-from BeautifulSoup import NavigableString
+import BeautifulSoup    
 
 
 class ModifyBody(ModifyBodyBase):
@@ -49,23 +40,24 @@ class ModifyBody(ModifyBodyBase):
         self._headers = newHeaders
     
     def body_modification_logic(self):
-        
-        utils.debug_print(self.headers)
-        
+                
         #we will work with utf8
         self.body = unicode(self.body, "utf-8", errors='replace')
         
-        head = self._get_Head_and_insert_js()
-        bodyHtml = self._get_body_html()
-                 
-        self.body = head + bodyHtml
-
-    def _get_Head_and_insert_js(self):
+        #HTML Head block modification
+        self._modify_HTML_head()
         
-        body = self.body
-        print "####[getting head]####"
-        #Insert the scripts for the tabs in head 
-        posHead = body.find("</head>") - 1
+        #HTML Body block modification
+        self._modify_HTML_body()
+                 
+
+    def _modify_HTML_head(self):
+        """
+            Gets the head html block of the HTML and applys all the needed modifications
+            for example add css, javascripts... then saves in the attribute body
+        """
+        
+        #Code that we will insert in the head
         jQScript = """
                     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
                     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
@@ -96,92 +88,62 @@ class ModifyBody(ModifyBodyBase):
                     
                     <link href="/static/css/shCore.css" rel="stylesheet" type="text/css" />
                     <link href="/static/css/shThemeRDark.css" rel="stylesheet" type="text/css" />
-                    
                     <script type="text/javascript" src="/static/js/shCore.js"></script>
                     <script type="text/javascript" src="/static/js/shBrushXml.js"></script>
                     
                     <script type="text/javascript" src="/static/js/jquery.iviewer.js"></script>
                     <script type="text/javascript" src="/static/js/jquery.mousewheel.min.js"></script>
                     <link href="/static/css/jquery.iviewer.css" rel="stylesheet" type="text/css" />
-
                    """
-        regularExpressionIn = '<head[\w"=\/\:\.\- ]*>'
-        reg = re.compile(regularExpressionIn)
-        m = reg.search(body)
         
-        bodyAux = body[:posHead] + jQScript + body[(posHead):]
+        #regular expressions for searching the head block, insert data and then save in the class attribute
+        #pattHeadStart = '<head[\w"=\/\:\.\- ]*>'
+        pattHeadFinish = '</head>'
+    
+        #regexHeadStart = re.search(pattHeadStart, body)
+        regexHeadFinish = re.search(pattHeadFinish, self.body)
         
-        head =  bodyAux[m.start(0): bodyAux.find("</head>") + 7]
+        bodyAux = self.body[:regexHeadFinish.start(0)] + jQScript + self.body[regexHeadFinish.start(0):]
         
+        self.body = bodyAux
         #convert result to unicode(if they are unicode already exception will be catch and wouldn't be done nothing)
-        try:
+        """try:
             head = unicode(head, "utf-8", errors='replace')
         except:
             pass
-        
-        return head
+        """
     
-    def _get_body_html(self):
-        body = self.body
+    def _modify_HTML_body(self):
         
-        posBody = body[(body.find("<body>") + 6): body.find("</body>")]
-        #get data
-        syntaxHigh='<script type="text/javascript">SyntaxHighlighter.all()</script>'
+        pattBodyStart  = '<body[\w"= ]*>'
+        pattBodyFinish = '</body>'
+        regexBodyStart = re.search(pattBodyStart, self.body)
+        regexBodyFinish = re.search(pattBodyFinish, self.body)
         
-        #tab necessary data
-        rdfNameAndUrl={}
-        tabs = '<li><a href="#fragment-web"><span>WebPage</span></a></li>'
-        links = self._getAllRdfLinks()
-        
-        for i in links:
-            #split the url to get the final name
-            tmp = i.split('/')
-            name = tmp[len(tmp)-1]
-            name = name.split('.')
-            finalName = name[0]
-            finalNamePar = finalName + '(RDF/XML)'
-            #create the HTML code for the tab declaration
-            tabs = tabs + '\n<li><a href=\"#fragment-'+ finalName +'\"><span>' + finalNamePar + '</span></a></li>'
-            #add to the dict
-            rdfNameAndUrl[finalName] = i
-            
-        grddlXML=''
-        if self._checkGRDDL():
-            tabs = tabs + '\n<li><a href=\"#fragment-grddl\"><span>GRDDL Parsing</span></a></li>'
-            #GRDDL parsing
-            grddlXML = self._parseGRDDL()
+        mainPageBody = self.body[regexBodyStart.end(0): regexBodyFinish.start(0)]
 
-        #get all the HTM code fragment from the RDF tabs
-        rdfs = self._addRDFsCodeInHTMLLinks(rdfNameAndUrl)
+        #Tab creation (All, XML and GRDDL, the contentn of the tab and the declaration)
+        #tab variable is a tuple with the declarations [0] and the content of the tabs [1]
+        tabs = self._createTabs()
 
+        #add the declaration of the tabs
         initHTML= """
-                  <body>
                     <div id="homeLink"><a href="/"><img id="homeButton" src="/static/img/home.png" alt="Return Home"/></a></div>
                     <div id="tabs">
-                        <ul>"""+ tabs +"""
+                        <ul>"""+ tabs[0] +"""
                         </ul>
                         <div id="fragment-web">"""
-        fragRDFs= """
+        endMainTab=  """
                         </div>
-                    """       
-                        
-        fragGrddl="""
-                        <div id="fragment-grddl">
-                    """
-        fragScrap="""
-                        </div>
-                        <div id="fragment-scrapp">
-                    """
+                            """       
         finHTML="""
+                        <script type="text/javascript">SyntaxHighlighter.all()</script>
                     </div>
-                </body>
-            </html>
                  """
-        
-
-        #return initHTML + posBody + frag2 + rdfs + frag3 + 'VOID'+ frag4+ awardXML +syntaxHigh + finHTML
-        stringsForHTML = [initHTML, posBody, fragRDFs, rdfs, fragGrddl, grddlXML, syntaxHigh, finHTML]
+        #Last string creation (now we are goint to use the tab content)      
+        stringsForHTML = [initHTML, mainPageBody, endMainTab, tabs[1], finHTML]
         final = ''
+        
         #convert all to unicode(if they are unicode already exception will be catch and wouldn't be done nothing)
         for string in  stringsForHTML:
             try:
@@ -189,17 +151,68 @@ class ModifyBody(ModifyBodyBase):
             except:
                 pass
             final = final + string
-        return final
-
-    def _addRDFsCodeInHTMLLinks(self, linkDict):
-        finalHtml=''
+        
+        self.body = self.body[: regexBodyStart.end(0)] + final + self.body[regexBodyFinish.start(0):]
+        
+    def _createTabs(self):
+        """
+            This method 'creates' alll the tabs, technically, this method does all the calls
+            for all the neccesary tabs(RDF/GRDDL), then returns a tuple with two vars, the 
+            first position of the tuple are the declarations of the tabs, and the second position 
+            are the contents of all the declared tabs. They are separate because the jquery plugin
+            need first to declare, and then when all the tabs are declared, put the content
+        """
+        
+        #tab necessary data
+        mainTab = '\n<li><a href="#fragment-web"><span>WebPage</span></a></li>'
+        tabs = mainTab
+        tabContent=''
+        cont = 0
+        
+        links = self._getAllRdfLinks()
+        #Declare XML/RDF TABS and create content
+        for i in links:
+            #split the url to get the final name
+            tmp = i.split('/')
+            name = tmp[len(tmp)-1]  #get the last array postion (the name of the file, ex: foaf.rdf)
+            name = name.split('.') 
+            finalName = name[0]     #get the las array position (the name of file without extension, ex: foaf)
+            finalNamePar = finalName + '(RDF/XML)'
+            #create the HTML code for the tab declaration
+            tabs = tabs + '\n<li><a href=\"#fragment-'+ finalName +'\"><span>' + finalNamePar + '</span></a></li>'
+            
+            #create RDF tab
+            downloadedXml = urllib2.urlopen(i).read() #get RDF content
+            try:
+                #if we want to print there is the need to change errors to 'ignore'
+                downloadedXml = unicode(downloadedXml, "utf-8", errors='replace')
+            except:
+                pass
+            #and create the whole content tab
+            tabContent += self._createSingleXMLGraphTab(downloadedXml, finalName, i, cont)   
+            cont += 1 
+        
+        #Declare GRDDL TAB and create content (if there is in the html...)
+        if self._checkGRDDL():
+            tabs = tabs + '\n<li><a href=\"#fragment-grddl\"><span>GRDDL Parsing</span></a></li>'
+            tabContent += self._createSingleXMLGraphTab(self._parseGRDDL(),'grddl', None, cont)
+            cont +=1
+        
+        #return a tuple with: (tab declarations, tab contents) 
+        return (tabs, tabContent) 
+    
+    def _createSingleXMLGraphTab(self, contentStr, key, url, cont):
+        """
+            Creates a single tab that is XML and Graph type, like the RDFs or the GRDDLs,
+            this tabs consist in an XML String and graph representation of that XML. 
+            receives: the content of the tab(the XML string), and the key(is the title of the tab),
+            the url of the XML file, and the counter of the tab(this is for the iviewer)
+        """
         preStart = """
                     <div id = "code">
                         <div id="codeBox">
                             <pre class="brush: xhtml">\n
                    """
-        #We need to include the iviewer script in the HTML code of the 
-        #page in order to visualize the RDF graph 
         preEnd = """
                             \n</pre>
                         </div>
@@ -208,31 +221,10 @@ class ModifyBody(ModifyBodyBase):
                     <script>
                     $(document).ready(function() {
                     var iviewer = {};
-                    $("#graphViewer").iviewer(
+                    $("#graphViewer"""+str(cont+1)+"""\").iviewer(
                   {
                 """
-        
-        
-        #create a block of tabs(the content)
-        for key, val in linkDict.iteritems():
-            
-            tempFile = urllib2.urlopen(val).read()
-            try:
-                #if we want to print there is the need to change errors to 'ignore'
-                tempFile = unicode(tempFile, "utf-8", errors='replace')
-            except:
-                pass
-            #add the tab block head 
-            tmp = '<div id=\"fragment-'+ key +'\">'
-            #create and save the graph (we put it inside the "for", because we have one graph for each RDF/XML)        
-            graphDest = 'static/tmp/'+str(key)+'.svg'
-            
-            utils.rdf_to_graph_file(val, graphDest, 'svg')
-            
-            #We retrieve the dir of the src image to show it in the viewer 
-            imgSource=' src: "/'+graphDest+'",'
-            
-            preEnd2= """
+        end= """
                       initCallback: function()
                       {
                         iviewer = this;
@@ -242,36 +234,32 @@ class ModifyBody(ModifyBodyBase):
                     </script>
                     
                     <div class="wrapper">
-                        <div id="graphViewer" class="viewer" ></div>
+                        <div id="graphViewer"""+str(cont+1)+"""\" class="viewer" ></div>
                         <br />
                     </div>
-                 """
-            
-            #and last but not least add all the parts to create a single html (One html to rule them 
-            #all, one html to find them, one html to bring them all and in the darkness bind them)
-            finalHtml = finalHtml + tmp +preStart + tempFile + preEnd + imgSource + preEnd2 +'</div>'
-        
-        #debug_print(finalHtml)
-        return finalHtml
-    
-    def _addRDFsCodeInHTMLStr(self, xml):
-        """
-        Get the content of the RDF and apply them to the final HTML, returns the HTML
-        """
-        
-        ini = """
-                <div id = "code">
-                    <div id="codeBox">
-                        <pre class="brush: xhtml">\n
-              """
-        fin = """
-                        \n</pre>
-                    </div>
                 </div>
-              """
-        finalHtml = ini + xml + fin
-    
-        return finalHtml
+                 """
+        
+        #add the tab block head(ex: <div id="fragment-grddl">)
+        tmp = '<div id=\"fragment-'+ key +'\">'
+        
+        #GRAPH TIME!!
+        #create the destination for saving the SVG graph      
+        graphDest = 'static/tmp/'+str(key)+'.svg'
+        
+        #In GRDDL we have the exception that the graph is made with an string and not with an URL
+        if url == None:
+            utils.str_to_graph_file(contentStr, self.proxied_url, graphDest, 'svg') #the url is this (actual url)
+        else:
+            utils.rdf_to_graph_file(url, graphDest, 'svg')
+        
+        #We retrieve the dir of the src image to show it in the viewer 
+        imgSource=' src: "/'+graphDest+'",'
+        
+        #assemble the final tab code, now we have a awesome complete tab. ta-da!! :D
+        code = tmp + preStart + contentStr + preEnd + imgSource + end
+        return code
+        
     
     def _getAllRdfLinks(self):
         """
@@ -286,7 +274,7 @@ class ModifyBody(ModifyBodyBase):
         rdfMatch = re.compile(localRdfRegex)
         
         #get all links
-        for link in BeautifulSoup(body, parseOnlyThese=SoupStrainer('a')):
+        for link in BeautifulSoup.BeautifulSoup(body, parseOnlyThese=BeautifulSoup.SoupStrainer('a')):
             #if is a link and matchs the pattern of a local RDF(Examples: foo.rdf or foo/bar.rdf)
             # and not a link to an RDF(Example: http://www.foo.com/bar.rdf)
             try:
@@ -299,19 +287,22 @@ class ModifyBody(ModifyBodyBase):
         #add prefix to the url
         for i in links:
             linkList.append(self._guessBestUrl() + i)
-
+        
         return linkList
-    
+        
     def _guessBestUrl(self):
         """We check if at least one of our proxied web urls (in the settings.py 
         of Django root path) is contained in the requested url to proxy, by this
         operation we ensure that we don't get urls like: http://.../index.html and 
-        only http://..."""
+        only http://... .So the aim of this method is avoid the bad made urls and not
+        get http://.../index.html/resources/foaf.rdf. We only want the root url ;)
+        """
         for i in settings.REVPROXY_SETTINGS:
             if i[1] in self.proxied_url:
                 url = i[1]
                 break
         return url
+        
     def _checkGRDDL(self):
         """
         Checks if the document(HTML) has GRDDL
@@ -336,7 +327,7 @@ class ModifyBody(ModifyBodyBase):
         if self._checkGRDDL():
             parser = RDF.Parser(name='grddl')
             stream = parser.parse_string_as_stream(self.body, self.proxied_url) 
-            return utils.serialize_stream(stream)
+            return unicode(utils.serialize_stream(stream), "utf-8", errors='replace')
         else:
             #return None
             return 'No GRDDL in this html....'

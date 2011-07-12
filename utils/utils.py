@@ -294,13 +294,13 @@ def serialize_stream(stream, serializerType='rdfxml'):
     ser = RDF.Serializer(name=serializerType)
     return ser.serialize_stream_to_string(stream)
 #######################################################################################
-def draw_rdf_str_graph(rdfString, uri, storePath):
+def str_to_graph_file(rdfString, uri, storePath, fileType='png'):
     stre = parse_string(rdfString, uri)
     dotSer = serialize_stream(stre, 'dot')
 
     gvv = gv.readstring(dotSer)
     gv.layout(gvv,'dot')
-    gv.render(gvv,'png',storePath)
+    gv.render(gvv,fileType,storePath)
 #######################################################################################
 def rdf_to_graph_file(rdfLink, storePath, fileType='png'):
     stre = parse_link(rdfLink)
