@@ -1,9 +1,8 @@
 import abc
 import urllib2
 import re
-
 from utils.utils import debug_print
-from utils.utils import rdf_to_graph_file
+from utils.rdf import rdf_to_graph_file
 from scripts.ModifyBodyBase import ModifyBodyBase
 
 from django.conf import settings

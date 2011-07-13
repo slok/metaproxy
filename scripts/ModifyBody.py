@@ -2,7 +2,7 @@ import abc
 import urllib2
 import re
 import RDF
-from utils import utils
+from utils import rdf
 from scripts.ModifyBodyBase import ModifyBodyBase
 from django.conf import settings
 import BeautifulSoup    
@@ -249,9 +249,9 @@ class ModifyBody(ModifyBodyBase):
         
         #In GRDDL we have the exception that the graph is made with an string and not with an URL
         if url == None:
-            utils.str_to_graph_file(contentStr, self.proxied_url, graphDest, 'svg') #the url is this (actual url)
+            rdf.str_to_graph_file(contentStr, self.proxied_url, graphDest, 'svg') #the url is this (actual url)
         else:
-            utils.rdf_to_graph_file(url, graphDest, 'svg')
+            rdf.rdf_to_graph_file(url, graphDest, 'svg')
         
         #We retrieve the dir of the src image to show it in the viewer 
         imgSource=' src: "/'+graphDest+'",'
@@ -327,7 +327,7 @@ class ModifyBody(ModifyBodyBase):
         if self._checkGRDDL():
             parser = RDF.Parser(name='grddl')
             stream = parser.parse_string_as_stream(self.body, self.proxied_url) 
-            return unicode(utils.serialize_stream(stream), "utf-8", errors='replace')
+            return unicode(rdf.serialize_stream(stream), "utf-8", errors='replace')
         else:
             #return None
             return 'No GRDDL in this html....'

@@ -5,7 +5,9 @@ from django.template import RequestContext
 from manager.models import Ontology
 from manager.forms import *
 from django.conf import settings
+from utils.db import *
 from utils.utils import *
+from utils.rdf import *
 import xml.dom.minidom
 import shutil
 ########################################################################

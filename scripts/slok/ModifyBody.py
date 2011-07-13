@@ -2,7 +2,6 @@ import abc
 import urllib2
 import re
 import RDF
-from utils import utils
 from scripts.ModifyBodyBase import ModifyBodyBase
 from django.conf import settings
 import BeautifulSoup    
@@ -76,23 +75,29 @@ class ModifyBody(ModifyBodyBase):
                             </script> 
                         """
         tweetCss = '<link href="http://tweet.seaofclouds.com/jquery.tweet.css" media="all" rel="stylesheet" type="text/css"/> '
-    
+        homeCss = '<link href="/static/css/proxiedWeb.css" rel="stylesheet" type="text/css" />'
         #Search and create the new head
         pattHeadFinish = '</head>'
         regexHeadFinish = re.search(pattHeadFinish, self.body)
         
-        bodyAux = self.body[:regexHeadFinish.start(0)] + initializeTweet + tweetJsFunc + tweetCss + self.body[regexHeadFinish.start(0):]
+        bodyAux = self.body[:regexHeadFinish.start(0)] + initializeTweet + tweetJsFunc + tweetCss + homeCss + self.body[regexHeadFinish.start(0):]
         
         self.body = bodyAux
     
     def _modify_HTML_body(self):
         
+        homeButton = '<div id="homeLink"><a href="/"><img id="homeButton" src="/static/img/home.png" alt="Return Home"/></a></div>'
         #tweetPlace = '<div class="tweet"></div> '
         tweetPlace = '<center> <div class="tweet" style="width:400px; text-align:left"></div> </center>'
+        
+        #place the home button
+        pattBodyStart  = '<body[\w"= ]*>'
+        regexBodyStart = re.search(pattBodyStart, self.body)
+        self.body =  self.body[:regexBodyStart.end(0)+1] + homeButton + self.body[regexBodyStart.end(0)+1:]
         
         #place the twitter plugin at the bottom
         pattBodyFinish = '</body>'
         regexBodyFinish = re.search(pattBodyFinish, self.body)
         
-        bodyAux = self.body[: regexBodyFinish.start(0)] + tweetPlace + self.body[regexBodyFinish.start(0):]
+        bodyAux = self.body[:regexBodyFinish.start(0)] + tweetPlace + self.body[regexBodyFinish.start(0):]
         self.body = bodyAux 
