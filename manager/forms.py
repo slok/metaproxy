@@ -20,7 +20,8 @@ class SparqlQuery(forms.Form):
                             label='Select DB to Query',
                             required=True)
     #Select the type of output
-    output = forms.ChoiceField(choices= [('python', 'python object'), ('xml', 'xml'), ('json', 'json')],
+    #output = forms.ChoiceField(choices= [('python', 'python object'), ('xml', 'xml'), ('json', 'json')],
+    output = forms.ChoiceField(choices= [('xml', 'RDF/XML'), ], 
                             widget=forms.Select(),
                             label='Query output format',
                             required=True)

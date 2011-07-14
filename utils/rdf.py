@@ -18,11 +18,11 @@ import urllib2
 
 #import Redland
 import RDF
-import Redland
 
 # Import graphviz
 import sys
-sys.path.append('/usr/lib64/graphviz/python/')
+graphvizPath='/usr/lib64/graphviz/python/'
+sys.path.append(graphvizPath)
 import gv
 
 # Import pygraph

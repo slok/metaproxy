@@ -13,20 +13,51 @@
 #
 #You should have received a copy of the GNU General Public License
 #along with this program. If not, see <http://www.gnu.org/licenses/>. 
-import rdflib
-from rdflib import plugin
-from rdflib.store import Store
-from rdflib import Namespace
-from rdflib import Literal
-from rdflib import URIRef
-from rdflib.store import SQLite
-from rdflib.store import Store
-from rdflib.graph import *
-from rdflib.namespace import Namespace
-from rdflib.query import *
-from rdflib import sparql
-from rdflib.query.result import QueryResult
 
+import RDF
+import Redland
+import MySQLdb 
+
+
+def create_mysql_db(user, password, db):
+    """
+        Creates a mysql database
+    """
+    connDb=MySQLdb.connect(host="localhost", user=user, passwd=password)
+    c=connDb.cursor()
+    c.execute('CREATE DATABASE ' + db)
+    print("[" + db +" DATABASE CREATED ]")
+#####################################################################################
+def connect_librdf_mysql(user, password, db):
+    """
+        Connects Redland(libRDF) and mysql
+        returns Storage instance
+    """
+    options = ''
+    #options += 'contexts=\'yes\', '
+    options += 'write=\'false\', '
+    options += 'host=\'localhost\', '
+    options += 'database=\'' + db + '\', '
+    options += 'user=\'' + user + '\', '
+    options += 'password=\'' + password + '\''
+
+    try:
+        storage=RDF.Storage(storage_name="mysql",
+                    name=db,
+                    options_string=options)
+    except:
+        create_mysql_db(user, password, db)
+        # if the new = true is always on, then the 'new' ruins the stored data every time we connect
+        # (but the data continues in the datasabase, stored) is a weird "issue", so we only put the 
+        # flag to true, the first time that the database needs to be created otherwise the queries always are "Null"
+        options += ', new=\'true\''
+        
+        storage=RDF.Storage(storage_name="mysql",
+                    name=db,
+                    options_string=options)
+    print("[ CONNETED TO "+ db +" DATABASE ]")
+    return storage
+#####################################################################################
 def store_RDF(rdfPath, user, password, db):
     """Stores an RDF file (path or URL) in the Database
     Keyword arguments:
@@ -35,153 +66,49 @@ def store_RDF(rdfPath, user, password, db):
     password -- The password of the user for accesing the DB
     db -- The DB that we are going to access
     """
-    #config string: host=localhost,user=XXXX,password=YYYYYYYYY,db=ZZZZZ
-    #Making the configuration string
-    configString = "host=localhost,user="
-    configString += user
-    configString += ",password="
-    configString += password
-    configString += ",db="
-    configString += db
-    #connect to database
-    store = plugin.get('MySQL', Store)(db)
-
-    #Try to open a created DB, if there isn't catch the exception to
-    #create a new one
-    try:
-        store.open(configString,create=False)
-    except:
-        store.open(configString,create=True)
-
-    graph = Graph(store)
-    #Parse the path to the RDF
-    graph.parse(rdfPath)
-    #Commit the changes(insert, delete and modifications in to the database)
-    graph.commit()
-
-    print("[OK] RDF stored in Database")
-    graph.close()
-
-#####################################################################################
-def sparql_prefix_parser(query):
-    """ Parses a "PREFIX" line(s) from a query to obtain all the 
-    variable=url in that line, the strings have to be like this:
-    #PREFIX ex1:  <http://www.example.org/schemas/Concept1>
-    only is possible to parse "PREFIX" in capital letters
-    Keyword arguments:
-    query -- the query to parse
+    st= connect_librdf_mysql(user, password, db)
+        
+    model=RDF.Model(st)
     
-    Returns a list made of [variable,url] values
-    """
-    returnList = []
-    while query.count("PREFIX") != 0:
-        #get caracters between X and Y-> [X:Y], so we search the characters
-        variable = query[query.find("PREFIX")+len("PREFIX"):query.find(":")]
-        url = query[query.find("<")+1:query.find(">")]
+    if not (rdfPath.startswith('http://') or rdfPath.startswith('HTTP://')):
+        rdfPath = 'file:' + rdfPath
+        
+    #Redland.librdf_model_transaction_start(model._model)
+    try:
+        # Do something
+        parser=RDF.Parser(name="rdfxml",mime_type="application/rdf+xml")
+        parser.parse_into_model(model, rdfPath)
+        #Redland.librdf_model_transaction_commit(model._model)
+        #model.sync()
+    except:
+        pass
+        #Redland.librdf_model_transaction_rollback(model._model)
 
-        #replace spaces (blanks)
-        variable = variable.replace(" ", "")
-        url = url.replace(" ","")
+    print("["+ rdfPath +" RDF STORED ]")
+    #Redland.librdf_free_storage(st._storage);
 
-        #add to the list
-        returnList.append([variable,url])
-
-        #delete from the beggining (PREFIX) to the first ">"
-        query = query.replace(query[0:query.find(">")+1], ' ', 1)
-    return returnList
 #####################################################################################
-def delete_sparql_prefix(query):
-    """ Deletes the PREFIX line(s) from the query and returns it
-    """
-    while query.count("PREFIX") != 0:
-        query = query.replace(query[0:query.find(">")+1], '', 1)
-
-    return query
-#####################################################################################
-def sparql_query(query, user, password, db, output):
+def sparql_query(query, user, password, db, output=None):
     """ Makes a sparql query to the SQLite database and returns a result
     Keyword arguments:
     query -- the query to execute
     user -- The user for accesing the DB
     password -- The password of the user for accesing the DB
     db -- The DB that we are going to access
-    output -- the output type could be: xml, json or python object
+    output -- the output type could be xml only, for now, so The is no parameter
     
     Returns a result (rdflib result)
     """	
-    prefixes = {}
-    #config string: host=localhost,user=XXXX,password=YYYYYYYYY,db=ZZZZZ
-    #Making the configuration string
-    configString = "host=localhost,user="
-    configString += user
-    configString += ",password="
-    configString += password
-    configString += ",db="
-    configString += db
-    #connect to database
-    store = plugin.get('MySQL', Store)(db)
-    #Try to open a created DB, if there isn't catch the exception to
-    #create a new one
-    try:
-        store.open(configString,create=False)
-    except:
-        store.open(configString,create=True)
-        
-    #load the graph
-    g = ConjunctiveGraph(store)
-
-    #register the sparql and Mysqlite plugin for the queries
-    plugin.register('MySQL', Store, 'rdflib.store.MySQL', 'MySQL')
-    plugin.register('sparql', sparql.Processor,
-         'rdflib.sparql.bison.Processor', 'Processor')
-    plugin.register('SPARQLQueryResult', QueryResult,
-      'rdflib.sparql.QueryResult', 'SPARQLQueryResult')
-
-    # add prefixes to the dictionary
-    for prefix in sparql_prefix_parser(query):
-        prefixes[prefix[0]] = prefix[1]
-
-    #delete PREFIX lines
-    query = delete_sparql_prefix(query)
-
-    #execute query
-    qres = g.query(query, initNs=prefixes)
-
-    #close DB
-    g.close()
+    st= connect_librdf_mysql(user, password, db)
     
-    #select the type of output
+    model=RDF.Model(st)
+
+    q1 = RDF.Query(query ,query_language='sparql')
+    q1Result = q1.execute(model) 
+    #q1Result = model.execute(q1) 
     
-    if output == 'xml':
-        qres = qres.serialize('xml')
-    elif output == 'json':
-        qres = qres.serialize('json')
-    else:
-        qres = qres.serialize('python')
-
-    return qres
-#####################################################################################
-"""def store_ontology(rdfPath):
-    """#Stores an ontology (RDF) file (path or URL) in the Database
-    #Keyword arguments:
-    #rdfPath -- the RDF file path, could be a System path or a URL
-"""
-    configString = "host=localhost,user=root,password=larrakoetxea,db=rdfstore"
-    #connect to database
-    store = plugin.get('MySQL', Store)('rdfstore')
+    print("[ SPARQL QUERY DONE ]")
+    #Redland.librdf_free_storage(st._storage);
     
-    try:
-        store.open(configString,create=False)
-    except:
-        store.open(configString,create=True)
-
-    graph = Graph(store)
-    #Parse the path to the RDF
-    graph.parse(rdfPath)
-    #Commit the changes(insert, delete and modifications in to the database)
-    graph.commit()
-
-    print("[OK] Ontology stored in Database")
-    graph.close()
-"""
-
+    #return in str(XML)
+    return q1Result.to_string()
