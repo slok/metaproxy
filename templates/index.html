@@ -23,19 +23,18 @@
 	</div>
     </header>
     <section>
-      <div id="content-wrap">
-	<div id="homecontent">
-	  <h2>Proxied Sites</h2>
-	  <ul>
-	    {% for item in proxiedSites %}
-
-	      <li><a href="/proxy/{{ item.0 }}">{{ item.0 }}</a></li>
-	    {% endfor %}
-	  </ul>
-	</div>
-	<div id="line"></div>
-	<div class="clearfix"></div>
-      </div>
+    <div id="content-wrap">
+        <div id="homecontent" >
+          <h2>Proxied Sites</h2>
+              <ul>
+                {% for item in proxiedSites %}
+                  <li style="font-size:large;"><a href="/proxy/{{ item.0 }}">{{ item.0 }}</a></li>
+                {% endfor %}
+              </ul>
+        </div>
+        <div id="line"></div>
+        <div class="clearfix"></div>
+    </div>
     </section>
 {% endblock %}
 
