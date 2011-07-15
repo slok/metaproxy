@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "manager/base_manager.html" %}
 
 {% block head %}
     <title>Meta Proxy</title>
@@ -8,7 +8,7 @@
 
    <div id="managerBack">
    <h1>Manager</h1>
-   <table align="center" cellspacing="0" cellpadding="0" border="0" width="700">
+   <table align="center" cellspacing="0" cellpadding="0" border="0" width="900">
      <tr>
 		<td width="191" align="center">
 			<a href="/manager/rdf/"><img src="/static/img/rdf.gif" alt="rdf" width="128" height="128"/></a>
@@ -25,6 +25,10 @@
         <td width="191" align="center">
 			<a href="/manager/scripts/"><img src="/static/img/script.png" alt="scripts" width="128" height="128"/></a>
 			<p>Scripts</p>
+		</td>
+        <td width="191" align="center">
+			<a href="/manager/addweb/"><img src="/static/img/webpage.png" alt="addweb" width="128" height="128"/></a>
+			<p>Web pages</p>
 		</td>
      </tr>
 	</table> 

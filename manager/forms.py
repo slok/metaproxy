@@ -20,7 +20,8 @@ class SparqlQuery(forms.Form):
                             label='Select DB to Query',
                             required=True)
     #Select the type of output
-    output = forms.ChoiceField(choices= [('python', 'python object'), ('xml', 'xml'), ('json', 'json')],
+    #output = forms.ChoiceField(choices= [('python', 'python object'), ('xml', 'xml'), ('json', 'json')],
+    output = forms.ChoiceField(choices= [('xml', 'RDF/XML'), ], 
                             widget=forms.Select(),
                             label='Query output format',
                             required=True)
@@ -31,3 +32,7 @@ class UploadScriptForm(forms.Form):
     file  = forms.FileField(label='Script to upload', required=False)
     #Select the database
     dataBases = forms.ChoiceField(label='Database to store the script', widget = forms.Select(), choices= settings.REVPROXY_SETTINGS)
+
+class addWebForm(forms.Form):
+    name = forms.CharField(label='Web Name',required=True)
+    url = forms.URLField(label='Web URI', required=True)

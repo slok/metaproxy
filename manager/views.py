@@ -1,3 +1,4 @@
+import os
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
@@ -5,8 +6,14 @@ from django.template import RequestContext
 from manager.models import Ontology
 from manager.forms import *
 from django.conf import settings
+from utils.db import *
 from utils.utils import *
+from utils.rdf import *
 import xml.dom.minidom
+import shutil
+########################################################################
+dbUser='root'
+dbPass='larrakoetxea'
 
 @login_required
 def manager_main_page(request):
@@ -38,6 +45,8 @@ def manager_rdf_upload_page(request):
                 filePath = settings.UPLOAD_URL
                 # Retrieve an RDF file from an url
                 download_rdf_file(urlFile,filePath)
+                rdfPath = urlFile
+                """
                 # In order to complete the filePath we need to get the 
                 # name of the RDF file. To do that, first, we split the 
                 # URL 
@@ -47,6 +56,7 @@ def manager_rdf_upload_page(request):
                 # Afterwards, we add to the filePath the last part of 
                 # the splitted url which is the name of the RDF file
                 filePath += parts[len(parts)-1]
+                """
 
         # If not, it means that the RDF file has been introduced via 
         # the "file" field 
@@ -55,10 +65,11 @@ def manager_rdf_upload_page(request):
                 # Load an RDF file from the local machine 
                 localFile = request.FILES['file']
                 handle_uploaded_file(localFile)
-                filePath = settings.UPLOAD_URL + localFile.name
+                rdfPath = settings.UPLOAD_URL + localFile.name
                 
         # [FIXME] Store the RDF file in the DB (doesn't work PROPERLY!)
-        store_RDF(filePath,"root","darkside","rdfstore")
+        dbName = form.cleaned_data['dataBases']
+        store_RDF(rdfPath, dbUser, dbPass, str(dbName))
         return render_to_response('manager/thanks.html')
         
    else:
@@ -110,18 +121,19 @@ def manager_sparql_queries_page(request):
             query =  form.cleaned_data['query']
             output =  form.cleaned_data['output']
             #execute the query
-            qres = sparql_query(query, "root", "larrakoetxea", db, output) 
-            resultList = []
+            #qres = sparql_query(query, dbUser, dbPass, db, output)
+            qres = sparql_query(query, dbUser, dbPass, str(db)) 
+            #pretiffy the XML with indentation
+            xmlQres = xml.dom.minidom.parseString(qres)
+            resultList = xmlQres.toprettyxml()
             #transform the query result to a list if is python
-            if output == "python":
-                for row in qres.result:
-                    resultList.append((row[0].format(),row[1].format()))
-            elif(output == "xml"):
+            """if(output == "xml"):
                 #pretiffy the XML with indentation
                 xmlQres = xml.dom.minidom.parseString(qres)
                 resultList = xmlQres.toprettyxml()
             else: 
                 resultList = qres
+            """
             #response with the html page and the results
             return render_to_response('manager/sparqlresult.html', {'resultList': resultList, 'output':output},context_instance=RequestContext(request))
     else:
@@ -159,6 +171,58 @@ def manager_scripts_code_page(request, id):
     except:
         return HttpResponseRedirect("/manager/scripts")
 
+def manager_addweb_page(request):
+    insert = False
+    if request.method == 'POST':
+        form = addWebForm(request.POST)
+        if form.is_valid():
+            #get data from the form
+            n = form.cleaned_data['name']
+            u = form.cleaned_data['url']
+            
+            #add url to the settings set the flag to good insertion,
+            insert_delete_web_in_settings(u, n, True)
+            insert=True
+            #create dir
+            newFolderPath = 'scripts/'+n+'/'
+            fileName = 'ModifyBody.py'
+            #prepare dir (init and default script)
+            create_dir(newFolderPath)
+            create_blank_file(newFolderPath+'__init__.py')
+            shutil.copyfile('scripts/' + fileName, newFolderPath + fileName)
+            #########################################
+            #Create database!!!!                    #
+            #########################################
+            #create a blank form again
+            form = addWebForm()
+    else:
+        form = addWebForm()
+    
+        
+    #the data for the html (variables...)
+    pageData = {'form': form,
+    'webs':settings.REVPROXY_SETTINGS,
+    'insert':insert,
+    }
+    #returning html, data, csrf token...
+    return render_to_response('manager/addweb.html', pageData, context_instance=RequestContext(request))
+
+def manager_addweb_delete_page(request, id):
+    n = id
+    #search for the element in the list
+    
+    for item in settings.REVPROXY_SETTINGS:
+        if item[0] == n:
+            u = item[1]
+            #delete from settings
+            insert_delete_web_in_settings(u, n, False)
+            #delete dir
+            rmFolderPath = 'scripts/'+n+'/'
+            delete_dir(rmFolderPath)
+            break
+    
+    return HttpResponseRedirect("/manager/addweb")
+########################################################################
 
 def handle_uploaded_file(f):
     filePath = settings.UPLOAD_URL
@@ -189,8 +253,46 @@ def read_file_Script(script):
 def read_file(filePath):
     return open(filePath, 'r').read()
 
-
-
-
-  
-  
+def insert_delete_web_in_settings(url, name, add):
+    #("google", "http://google.com"), style
+    newWebStr = '\n    (\"' + name + '\", \"' + url + '\"),' 
+    #open the file
+    inFile = open('settings.py', 'r')
+    #read and modify the string
+    settingsStr = ''
+    for line in inFile.readlines():
+        settingsStr = settingsStr+line
+    
+    #add or delete the line
+    if add:
+        #only add if it isnet in the file
+        if(settingsStr.find(newWebStr) == -1):
+            strToFind = 'REVPROXY_SETTINGS = ['
+            position = settingsStr.find(strToFind)
+            position = position + len(strToFind)
+            settingsStr= settingsStr[:position] + newWebStr + settingsStr[(position):]
+    else:
+        print newWebStr
+        settingsStr = settingsStr.replace(newWebStr, '')
+    #close the input file
+    inFile.close()
+    #open the file in write mode
+    outFile = open('settings.py', 'w')
+    outFile.write(settingsStr)
+    outFile.close()
+     
+def create_dir(path):
+    dir = os.path.dirname(path)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+        
+def delete_dir(path):
+    dir = os.path.dirname(path)
+    print dir
+    if os.path.exists(dir):
+        shutil.rmtree(dir)
+        
+def create_blank_file(path):
+    outFile = open(path, 'w')
+    outFile.write('')
+    outFile.close()
