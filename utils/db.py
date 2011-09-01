@@ -28,6 +28,15 @@ def create_mysql_db(user, password, db):
     c.execute('CREATE DATABASE ' + db)
     print("[" + db +" DATABASE CREATED ]")
 #####################################################################################
+def delete_mysql_db(user, password, db):
+    """
+        deletes a mysql database
+    """
+    connDb=MySQLdb.connect(host="localhost", user=user, passwd=password)
+    c=connDb.cursor()
+    c.execute('DROP DATABASE ' + db)
+    print("[" + db +" DATABASE DROPPED ]")
+#####################################################################################
 def connect_librdf_mysql(user, password, db):
     """
         Connects Redland(libRDF) and mysql
