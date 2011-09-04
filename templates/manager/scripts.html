@@ -22,9 +22,38 @@ import abc
 from scripts.ModifyBodyBase import ModifyBodyBase
 
 class ModifyBody(ModifyBodyBase):
-    def body_modification_logic(self, body):
-        body = body.replace('something', 'other thing') 
-        return body
+    
+    def __init__(self, body, headers, proxied_url):
+        self.body = body
+        self.headers = headers
+        self.proxied_url = proxied_url
+    
+    @property
+    def proxied_url(self):
+        return self._proxied_url
+    
+    @proxied_url.setter
+    def proxied_url(self, newProxied_url):
+        self._proxied_url = newProxied_url
+    
+    @property
+    def body(self):
+        return self._body
+    
+    @body.setter
+    def body(self, newBody):
+        self._body = newBody
+    
+    @property
+    def headers(self):
+        return self._headers
+    
+    @headers.setter
+    def headers(self, newHeaders):
+        self._headers = newHeaders
+    
+    def body_modification_logic(self):
+        self.body = self.body.replace('something', 'other thing') 
                 {% endpygmentize %}
                 </div>
             </ul>
