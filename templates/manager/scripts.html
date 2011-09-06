@@ -88,7 +88,7 @@ class ModifyBody(ModifyBodyBase):
             {% for item in scriptUrls %}
             <tr>
                 <td><div id="centeredContent">{{item.0}}</div></td>
-                <td>{{item.1}}</td>
+                <td><a href="/proxy/{{item.0}}">{{item.1}}</a></td>
                 <td >
                     <a href="/manager/scripts/{{item.0}}">
                     <div id="centeredContent"><img src="/static/img/script.png" border="0" 

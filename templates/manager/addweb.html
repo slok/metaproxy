@@ -33,7 +33,7 @@
             {% for item in webs %}
             <tr>
                 <td>{{item.0}}</td>
-                <td>{{item.1}}</td>
+                <td><a href="/proxy/{{item.0}}">{{item.1}}</a></td>
                 <td >
                     <a href="/manager/addweb/{{item.0}}">
                     <div id="centeredContent"><img src="/static/img/delete.png" border="0" 
